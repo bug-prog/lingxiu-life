@@ -1,6 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="開書">
-  <rect width="64" height="64" rx="12" fill="#2563EB"/>
-  <!-- open book, white simple lines -->
+  <rect width="64" height="64" fill="#2563EB"/>
   <path d="M12 18c8-5 14-5 20 0v30c-6-5-12-5-20 0V18z" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linejoin="round"/>
   <path d="M52 18c-8-5-14-5-20 0v30c6-5 12-5 20 0V18z" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linejoin="round"/>
   <path d="M32 18v30" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round"/>
