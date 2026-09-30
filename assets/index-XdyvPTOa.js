@@ -10,7 +10,7 @@ Error generating stack: `+e.message+`
 lsGet=(k,d)=>{try{let v=localStorage.getItem(k);return v==null?d:v}catch{return d}},lsSet=(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch{}},
 [cat,setCat]=(0,C.useState)(()=>{let v=lsGet(`bug_gospel_category`,null);return G.cats.some(c=>c.id===v)?v:null}),
 [who,setWho]=(0,C.useState)(()=>{let v=lsGet(`bug_gospel_person`,`all`);return v===`all`||G.people.includes(v)?v:`all`}),
-[open,setOpen]=(0,C.useState)({listen:!1,core:!1,pray:!1}),[hl,setHl]=(0,C.useState)(null),first=(0,C.useRef)(!0);
+[open,setOpen]=(0,C.useState)({listen:!1,core:!1,pray:!1}),[hl,setHl]=(0,C.useState)(null),[onionOpen,setOnionOpen]=(0,C.useState)(!1),first=(0,C.useRef)(!0);
 (0,C.useEffect)(()=>{lsSet(`bug_gospel_category`,cat);if(first.current){first.current=!1;return}if(cat)setTimeout(()=>{try{let el=document.getElementById(`gospel-detail`);el&&window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-72,behavior:`smooth`})}catch{}},60)},[cat]);
 (0,C.useEffect)(()=>{lsSet(`bug_gospel_person`,who)},[who]);
 const scrollTo=id=>{try{let el=document.getElementById(id);el&&window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-72,behavior:`smooth`})}catch{}},
@@ -48,7 +48,7 @@ Detail=(c)=>{let l=L[c.layer];return J(`div`,{id:`gospel-detail`,className:`spac
  J(`div`,{className:`flex items-start justify-between gap-2`},J(`div`,{className:`min-w-0`},J(`div`,{className:`text-[11px] font-bold text-amber-800 dark:text-amber-400`},`③ 解答方向`),J(`h3`,{className:h2c},c.title)),
   J(`button`,{type:`button`,onClick:()=>{setCat(null),scrollTo(`gospel-reasons`)},className:`px-3 py-1.5 rounded-full border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 text-xs font-medium text-stone-600 dark:text-stone-300 flex-shrink-0 active:scale-95`},`← 返回類別`)),
  Sec(`thought`,`💭 使用者想法`,J(`p`,{className:`font-serif text-sm sm:text-base leading-relaxed text-stone-800 dark:text-stone-200`},c.thought)),
- Sec(`layer`,`🧅 洋蔥層次`,J(`div`,{className:`flex items-center gap-2 flex-wrap`},...L.map(x=>J(`span`,{key:x.id,className:`px-2.5 py-1 rounded-full text-[11px] font-bold`,style:x.id===c.layer?{background:x.color,color:x.fg}:{background:`transparent`,color:`#a8a29e`,border:`1px dashed #d6d3d1`}},x.short))),J(`p`,{className:body},J(`b`,{className:`text-stone-900 dark:text-stone-100`},l.name,`　`),c.layerNote)),
+ Sec(`layer`,`🧅 洋蔥層次`,J(`div`,{className:`flex items-center gap-2 flex-wrap`},...L.map(x=>J(`span`,{key:x.id,className:`px-2.5 py-1 rounded-full text-[11px] font-bold`,style:x.id===c.layer?{background:x.color,color:x.fg}:{background:`transparent`,color:`#a8a29e`,border:`1px dashed #d6d3d1`}},x.short))),J(`p`,{className:body},J(`b`,{className:`text-stone-900 dark:text-stone-100`},l.name,`　`),c.layerNote),J(`button`,{type:`button`,"data-gospel-layer-link":`1`,onClick:()=>{setOnionOpen(!0),setHl(c.layer),setTimeout(()=>scrollTo(`gospel-layer-${c.layer}`),80)},className:`text-xs font-bold text-amber-800 dark:text-amber-400 hover:underline text-left`},`🧅 何謂福音剝洋蔥？查看這一層的說明 →`)),
  Sec(`answers`,`🧭 解答方向`,J(`ul`,{className:`space-y-2`},...c.answers.map((a,i)=>J(`li`,{key:i,className:`${body} flex gap-2`},J(`span`,{className:`text-amber-700 font-bold flex-shrink-0`},`${i+1}.`),J(`span`,{},a))))),
  Sec(`questions`,`❓ 可以問嘅問題`,J(`ul`,{className:`space-y-1.5`},...c.questions.map((q,i)=>J(`li`,{key:i,className:`${body} flex gap-2`},J(`span`,{className:`text-amber-700 flex-shrink-0`},`•`),J(`span`,{},q))))),
  Sec(`verses`,`📖 關鍵經文（和合本）`,J(`div`,{className:`grid gap-2 sm:grid-cols-2`},...c.verses.map(Verse))),
@@ -58,13 +58,17 @@ Detail=(c)=>{let l=L[c.layer];return J(`div`,{id:`gospel-detail`,className:`spac
    c.more.length?J(`div`,{className:`pt-1`},J(`div`,{className:`text-[11px] font-bold text-stone-500 mb-1.5`},`其他相關小冊子`),J(`div`,{className:`flex flex-wrap gap-1.5`},...c.more.map(n=>J(`span`,{key:n,className:`px-2 py-1 rounded-lg bg-stone-100 dark:bg-stone-700 text-xs text-stone-700 dark:text-stone-200`},`《${G.tracts[n].t}》${G.tracts[n].a}`)))):null):null)};
 return J(`div`,{className:`max-w-4xl mx-auto px-4 py-6 md:py-8 space-y-6`,"data-gospel-root":`1`},
  J(`div`,{},J(`h1`,{className:`font-serif font-bold text-xl sm:text-2xl text-stone-900 dark:text-stone-100 flex items-center gap-2`},J(gospelIcon,{className:`w-5 h-5 text-amber-800 dark:text-amber-400`}),J(`span`,{},`福音錦囊`)),
-  J(`p`,{className:`text-xs text-stone-500 mt-1`},`幫助你明白身邊未信主的朋友在想甚麼，按他們的處境溫柔地分享福音。`),
-  J(`div`,{className:`flex flex-wrap gap-2 mt-3`},J(`button`,{type:`button`,onClick:()=>scrollTo(`gospel-onion`),className:chip(!1)},`① 福音剝洋蔥`),J(`button`,{type:`button`,onClick:()=>scrollTo(`gospel-reasons`),className:chip(!1)},`② 未信主的原因`))),
- J(`section`,{id:`gospel-onion`,className:`space-y-4`},
+  J(`p`,{className:`text-xs text-stone-500 mt-1`},`幫助你明白身邊未信主的朋友在想甚麼，按他們的處境溫柔地分享福音。`)),
+ J(`div`,{className:`space-y-4`},
+  J(`button`,{type:`button`,id:`gospel-onion-toggle`,"data-gospel-onion-toggle":`1`,"aria-expanded":onionOpen?`true`:`false`,"aria-controls":`gospel-onion`,onClick:()=>setOnionOpen(o=>!o),className:`w-full ${card} px-4 py-3 flex items-center justify-between gap-2 text-left hover:bg-stone-50 dark:hover:bg-stone-700`},
+   J(`span`,{className:`flex items-center gap-3 min-w-0`},J(`span`,{style:{fontSize:`22px`,lineHeight:1}},`🧅`),J(`span`,{className:`min-w-0`},J(`span`,{className:`block font-bold text-sm sm:text-base text-amber-900 dark:text-amber-300`,"data-gospel-onion-label":`1`},onionOpen?`收起福音剝洋蔥`:`何謂福音剝洋蔥`),J(`span`,{className:`block text-xs text-stone-500 dark:text-stone-400`},onionOpen?`再按一下收起說明`:`一層一層陪對方走到福音核心：層次、聆聽、發問與禱告`))),
+   J(ae,{className:`w-4 h-4 text-stone-400 flex-shrink-0`,style:{transform:onionOpen?`rotate(90deg)`:`none`,transition:`transform .2s`}})),
+  onionOpen?J(`section`,{id:`gospel-onion`,className:`space-y-4`},
   J(`div`,{className:`${card} p-5 space-y-3`},J(`div`,{className:lab},`① 福音剝洋蔥`),J(`h2`,{className:h2c},`一層一層，陪對方走到福音的核心`),...G.onion.lead.map((p,i)=>J(`p`,{key:i,className:body},p)),
    J(`div`,{className:`flex flex-col sm:flex-row gap-2`},...G.onion.principles.map((p,i)=>J(`div`,{key:i,className:`flex-1 p-3 rounded-xl bg-amber-50 dark:bg-stone-900 border border-amber-200 dark:border-stone-700`},J(`div`,{className:`text-sm font-bold text-amber-900 dark:text-amber-300`},p[0]),J(`p`,{className:`text-xs text-stone-600 dark:text-stone-400 mt-0.5`},p[1]))))),
   J(`div`,{className:`${card} p-5 space-y-4`},J(`h3`,{className:`font-bold text-base text-stone-900 dark:text-stone-100`},`洋蔥的四個層次`),Onion(),J(`div`,{className:`space-y-3`},...L.map(Layer))),
-  ...G.onion.sections.map(Coll)),
+  ...G.onion.sections.map(Coll),
+   J(`button`,{type:`button`,"data-gospel-onion-close":`1`,onClick:()=>{setOnionOpen(!1),setTimeout(()=>scrollTo(`gospel-onion-toggle`),60)},className:`w-full py-2.5 rounded-xl border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 text-sm font-medium text-stone-600 dark:text-stone-300 hover:bg-stone-50`},`收起福音剝洋蔥 ↑`)):null),
  J(`section`,{id:`gospel-reasons`,className:`space-y-4`},
   J(`div`,{className:`${card} p-5 space-y-3`},J(`div`,{className:lab},`② 對方未信主的原因`),J(`h2`,{className:h2c},`你的朋友比較像哪一種？`),J(`p`,{className:body},`按對方常說的話或處境選一個類別，就會看到他心裡可能的想法、所在的洋蔥層次、回應方向、可以問的問題、經文`+(SHOW_TRACTS?`和合適的小冊子`:``)+`。`),
    J(`div`,{className:`flex flex-wrap gap-1.5 items-center`},J(`span`,{className:`text-[11px] font-bold text-stone-500 mr-1`},`對象：`),J(`button`,{type:`button`,onClick:()=>setWho(`all`),className:chip(who===`all`),"data-gospel-person":`all`},`全部`),...G.people.map(p=>J(`button`,{key:p,type:`button`,onClick:()=>setWho(p),className:chip(who===p),"data-gospel-person":p},p)))),
