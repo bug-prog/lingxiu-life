@@ -85,3 +85,9 @@ node tests/smoke.cjs http://localhost:8080
 測試模擬語音 API 以驗證控制流程，不等於在每款實機上確認中文發音。公開前仍建議由目標讀者及熟悉本書的人試讀。
 
 閱讀設計參考：[W3C Clear and Understandable Content](https://www.w3.org/WAI/WCAG2/supplemental/objectives/o3-clear-content/)、[Use White Spacing](https://www.w3.org/WAI/WCAG2/supplemental/patterns/o3p10-whitespace/)。
+
+## 全書目錄與原文頁（book.html）
+
+- `book.html` + `book.app.js` + `book.css`：書本資料、序言、全書目錄（第二、三部標示「未收錄原文」）、神論十四章原文（小標題分段、問題解答題號、保留原書頁碼），另有原文搜尋及按原書頁碼跳轉。
+- 資料 `assets/book.js` 由 `python3 scripts/build_book.py` 從 `assets/book-part-one.txt` 產生；改動文字檔後請重跑此腳本及 `scripts/build_content.py`。
+- 閱讀設定沿用陪伴閱讀（`slow-reader:v1`，只讀）；最後閱讀位置存於 `slow-reader:book:v1`。

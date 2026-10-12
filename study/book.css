@@ -1,0 +1,98 @@
+/* 全書目錄與原文頁（book.html）及「陪伴閱讀／全書目錄與原文」切換列。只用原程式的 CSS 變數。 */
+.book-switch{max-width:1324px;margin:18px auto 0;padding:0 48px;display:flex;gap:10px}
+.book-switch a{flex:1;max-width:340px;display:flex;flex-direction:column;gap:2px;padding:10px 16px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text);text-decoration:none;font-weight:700;font-size:15px;line-height:1.4}
+.book-switch a small{font-weight:400;font-size:12px;color:var(--muted)}
+.book-switch a[aria-current=page]{border-color:var(--green);background:var(--green-soft);color:var(--green)}
+.book-switch a:not([aria-current]):hover{border-color:var(--accent)}
+html.in-site .book-switch{margin-top:14px}
+.book-layout{max-width:1324px;margin:0 auto;padding:22px 48px 10px;display:grid;grid-template-columns:280px minmax(0,1fr);gap:36px;align-items:start}
+.book-sidebar{position:sticky;top:14px;max-height:calc(100dvh - 28px);overflow:auto;padding-right:4px}
+.book-sidebar-inner{display:flex;flex-direction:column;gap:14px}
+.book-page-jump{border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:var(--surface)}
+.book-page-jump label{font-size:13px;font-weight:600;display:block;margin-bottom:6px}
+.book-page-jump div{display:flex;gap:8px}
+.book-page-jump input{flex:1;min-width:0;border:1px solid var(--border);border-radius:8px;padding:0 10px;min-height:42px;font-size:15px;background:var(--bg);color:var(--text)}
+.book-page-jump .button{min-height:42px;padding:8px 14px}
+.book-page-jump p{margin:6px 0 0;min-height:0}
+.book-select-label,.book-select{display:none}
+.book-nav{display:flex;flex-direction:column;gap:2px}
+.book-nav h3{font-size:12px;letter-spacing:.06em;color:var(--muted);margin:12px 0 4px;font-weight:700}
+.book-nav a{display:flex;gap:8px;align-items:baseline;padding:8px 10px;border-radius:8px;color:var(--text);text-decoration:none;font-size:14px;line-height:1.45;border:1px solid transparent}
+.book-nav a .num{font-size:12px;color:var(--muted);min-width:1.6em}
+.book-nav a:hover{background:var(--green-soft)}
+.book-nav a[aria-current=true]{background:var(--green-soft);border-color:#fcd34d;color:var(--green);font-weight:700}
+body[data-theme=dark] .book-nav a[aria-current=true]{border-color:#78350f}
+.book-main{min-width:0;outline:none}
+.book-main h1{font-size:30px;line-height:1.35;margin:0 0 6px}
+.book-main h2{font-size:22px;margin:30px 0 12px;line-height:1.4}
+.book-card{border:1px solid var(--border);background:var(--card);border-radius:16px;padding:22px 24px;margin:0 0 16px;box-shadow:var(--shadow)}
+.book-meta{display:grid;grid-template-columns:max-content 1fr;gap:6px 16px;margin:0;font-size:15px}
+.book-meta dt{color:var(--muted)}.book-meta dd{margin:0}
+.book-lines{margin:0;padding:0;list-style:none;font-size:14px;line-height:1.8}
+.book-main details{border-top:1px solid var(--border);padding:10px 0}
+.book-main details:last-child{border-bottom:1px solid var(--border)}
+.book-main summary{cursor:pointer;font-weight:600;min-height:32px;display:flex;align-items:center}
+.toc-part{margin:0 0 28px}
+.toc-part-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px}
+.toc-part-head h2{margin:0}
+.badge{display:inline-block;font-size:12px;font-weight:600;padding:2px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent);border:1px solid var(--border);white-space:nowrap}
+.badge.ok{background:var(--green-soft);color:var(--green)}
+.toc-ch{border:1px solid var(--border);border-radius:14px;padding:14px 18px;margin:0 0 10px;background:var(--card)}
+.toc-ch-head{display:flex;gap:10px;align-items:baseline;justify-content:space-between;flex-wrap:wrap}
+.toc-ch-title{font-size:17px;font-weight:700;margin:0}
+.toc-ch-page{font-size:12px;color:var(--muted);white-space:nowrap}
+.toc-topics{margin:8px 0 0;font-size:13px;color:var(--muted);line-height:1.8}
+.toc-topics span+span::before{content:" · ";color:var(--border)}
+.toc-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.toc-actions .button{min-height:40px;padding:6px 14px;font-size:13px}
+.toc-q{margin:6px 0 0;padding-left:1.6em;font-size:14px;line-height:1.7}
+.toc-q li{margin:3px 0}
+.toc-q a{color:var(--text)}
+.ch-head{margin:0 0 14px}
+.ch-jump{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 4px}
+.ch-jump a{font-size:13px;padding:5px 12px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text);text-decoration:none;line-height:1.5}
+.ch-jump a.qa{border-color:var(--accent);color:var(--accent)}
+.ch-jump a:hover{border-color:var(--green)}
+.book-text{font-size:var(--read-size);line-height:var(--read-line);letter-spacing:var(--read-space);max-width:34em}
+.book-text p{margin:0 0 .85em}
+.book-text h2{font-size:calc(var(--read-size) + 2px);color:var(--green);margin:1.4em 0 .6em;scroll-margin-top:16px}
+.book-text .qa-head{font-size:calc(var(--read-size) + 4px);margin:1.6em 0 .6em;padding-top:.8em;border-top:2px solid var(--border);color:var(--accent);scroll-margin-top:16px}
+.book-text .q{background:var(--green-soft);border-radius:10px;padding:.55em .8em;margin:1.2em 0 .6em;font-weight:700;scroll-margin-top:16px;display:flex;gap:.5em}
+.book-text .q .qn{color:var(--green);flex:none}
+.book-text .ans-label{display:inline-block;font-weight:700;color:var(--accent);margin-right:.3em}
+.book-text .pref{list-style:none;margin:0 0 .85em}
+.page-mark{display:flex;align-items:center;gap:10px;margin:1.1em 0;color:var(--muted);font-size:12px;letter-spacing:.04em;scroll-margin-top:16px}
+.page-mark::before,.page-mark::after{content:"";flex:1;border-top:1px dashed var(--border)}
+.page-mark-inline{display:inline-block;font-size:11px;line-height:1.4;padding:0 6px;margin:0 3px;border:1px dashed var(--border);border-radius:6px;color:var(--muted);vertical-align:middle;letter-spacing:0;scroll-margin-top:16px}
+.target-flash{animation:flash 1.6s ease-out}
+@keyframes flash{0%{background:var(--accent-soft)}100%{background:transparent}}
+.ch-nav{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:30px 0 10px;padding-top:18px;border-top:1px solid var(--border)}
+.ch-nav .button{min-height:44px}
+.search-results{list-style:none;padding:0;margin:0}
+.search-results li{border-bottom:1px solid var(--border)}
+.search-results a{display:block;padding:12px 4px;color:var(--text);text-decoration:none}
+.search-results a:hover{background:var(--green-soft)}
+.search-results small{display:block;color:var(--muted);font-size:12px;margin-bottom:2px}
+.search-results mark{background:var(--accent-soft);color:var(--accent);border-radius:3px;padding:0 1px}
+.book-note{font-size:13px;color:var(--muted)}
+@media(prefers-reduced-motion:reduce){.target-flash{animation:none}}
+@media(max-width:900px){
+  .book-switch{padding:0 22px}
+  .book-layout{grid-template-columns:1fr;padding:16px 22px 10px;gap:16px}
+  .book-sidebar{position:static;max-height:none;overflow:visible;padding:0}
+  .book-nav{display:none}
+  .book-select-label{display:block;font-size:13px;font-weight:600;margin-bottom:-8px}
+  .book-select{display:block;width:100%;min-height:46px;border:1px solid var(--border);border-radius:9px;padding:0 10px;background:var(--surface);color:var(--text);font-size:15px}
+  .book-main h1{font-size:25px}
+}
+@media(max-width:600px){
+  .book-switch{padding:0 18px;gap:8px}
+  .book-switch a{padding:8px 12px;font-size:14px}
+  .book-switch a small{font-size:11px}
+  .book-layout{padding:14px 18px 6px}
+  .book-card{padding:16px}
+  .toc-ch{padding:12px 14px}
+  .book-meta{grid-template-columns:1fr;gap:0}
+  .book-meta dd{margin-bottom:6px}
+}
+@media print{.book-sidebar,.book-switch,.ch-nav,.ch-jump{display:none}.book-layout{display:block}}
