@@ -121,8 +121,9 @@
   }
   function total() { return mode==='easy' ? 4 : chapter.original.length; }
   function current() { return positions[chapter.id][mode]; }
+  let autoAdvancing = false;
   function renderCard(focus = false) {
-    stopSpeech();
+    if (!autoAdvancing) stopSpeech();
     const step = current(), count = total();
     $('reading-panel').setAttribute('aria-labelledby',mode==='easy'?'easy-tab':'original-tab');
     $('card-count').textContent = `${step+1} / ${count} 小段`;
@@ -133,18 +134,19 @@
     $('takeaway').replaceChildren();
     if (mode==='original') {
       const item = chapter.original[step];
-      $('card-label').textContent = '原文對照';
-      $('card-title').textContent = `原書第 ${item.page} 頁`;
+      // 頁碼只作小標籤顯示，不放入朗讀內容
+      $('card-label').textContent = `原書第 ${item.page} 頁`;
+      $('card-title').textContent = `第 ${step+1} 小段`; $('card-title').classList.add('sr-only');
       $('card-body').replaceChildren(...item.text.split('\n\n').map(t => { const p = document.createElement('p'); p.textContent = t; return p; }));
       $('takeaway').innerHTML = '';
     } else if (step<3) {
       const card = chapter.cards[step];
-      $('card-label').textContent = card.label; $('card-title').textContent = card.title;
+      $('card-label').textContent = card.label; $('card-title').textContent = card.title; $('card-title').classList.remove('sr-only');
       $('card-body').innerHTML = card.lines.map(line=>`<p>${escapeHTML(line)}</p>`).join('');
       $('takeaway').innerHTML = `<small>記住這一句就好</small>${escapeHTML(card.takeaway)}`;
     } else {
       const q = chapter.quiz;
-      $('card-label').textContent = '輕輕想一想'; $('card-title').textContent = q.question;
+      $('card-label').textContent = '輕輕想一想'; $('card-title').textContent = q.question; $('card-title').classList.remove('sr-only');
       $('card-body').innerHTML = '<p class="quiz-intro">選最接近作者意思的一項。<br>不用寫字，也不用急着答。</p><div class="quiz-options">'+q.options.map((o,i)=>`<button class="quiz-option" data-answer="${i}" aria-pressed="false"><span class="option-letter" aria-hidden="true">${String.fromCharCode(65+i)}</span><span>${escapeHTML(o)}</span></button>`).join('')+'</div><button class="text-button hint-button" id="hint" aria-expanded="false" aria-controls="hint-content">先看一點提示 ＋</button><p class="hint" id="hint-content" hidden></p>';
       if (hintOpen) revealHint();
       if (Number.isInteger(quizSelections[chapter.id])) showAnswer(quizSelections[chapter.id],false);
@@ -221,23 +223,37 @@
     if (speechState==='speaking') {speech.pause();speechState='paused';$('speak').textContent='▷ 繼續朗讀';$('audio-status').textContent='已暫停；可以隨時繼續';return;}
     if (speechState==='paused') {speech.resume();speechState='speaking';$('speak').textContent='Ⅱ 暫停朗讀';$('audio-status').textContent='正在朗讀這一段';return;}
     stopSpeech(); populateVoices();
-    const items = [{text:$('card-title').textContent,node:$('card-title')}];
+    const voice=voices.find(v=>v.voiceURI===settings.voice)||voices.find(v=>/zh[-_]HK|yue/i.test(v.lang))||voices.find(v=>/zh[-_]TW/i.test(v.lang))||voices[0];
+    if (!voice) {stopSpeech('未找到中文語音。請在裝置安裝中文語音，再試一次。');return;}
+    const token=++speechToken;
+    speechState='speaking'; $('speak').textContent='Ⅱ 暫停朗讀';$('speech-stop').disabled=false;
+    $('audio-status').textContent='正在朗讀；讀完會自動接下一段，直至本章完';
+    speakCard(token, voice);
+  }
+  function speakCard(token, voice) {
+    const items = mode==='original' ? [] : [{text:$('card-title').textContent,node:$('card-title')}];
     $('card-body').querySelectorAll('p:not([hidden]), .quiz-option').forEach(node=>items.push({text:node.textContent,node}));
     if ($('takeaway').textContent)items.push({text:$('takeaway').textContent,node:$('takeaway')});
-    // Short utterances avoid long-text voice limits. Only speak this card, never advance automatically.
+    // Short utterances avoid long-text voice limits. After a card ends, continue with the next card of the same chapter
+    // (原文: to the last card; 導讀: the three cards, stopping before the quiz). Never jumps to another chapter.
     const queue=items.flatMap(item=>{
       const chunks=item.text.match(/[^。！？；\n]+[。！？；\n]?/g)||[item.text];
       return chunks.flatMap(text=>Array.from({length:Math.ceil(text.length/110)},(_,i)=>({text:text.slice(i*110,(i+1)*110),node:item.node})));
     }).filter(item=>item.text.trim());
-    const token=++speechToken;
-    speechState='speaking'; $('speak').textContent='Ⅱ 暫停朗讀';$('speech-stop').disabled=false;
-    $('audio-status').textContent='正在朗讀；目前的句子會標亮';
-    const voice=voices.find(v=>v.voiceURI===settings.voice)||voices.find(v=>/zh[-_]HK|yue/i.test(v.lang))||voices.find(v=>/zh[-_]TW/i.test(v.lang))||voices[0];
-    if (!voice) {stopSpeech('未找到中文語音。請在裝置安裝中文語音，再試一次。');return;}
     let position=0;
     function playNext() {
       if (token!==speechToken)return;
-      if (position>=queue.length) {stopSpeech('這一段聽完了。準備好再到下一段。');return;}
+      if (position>=queue.length) {
+        const last = mode==='original' ? total()-1 : 2;
+        if (current() < last) {
+          // 同一朗讀流程內轉到下一段：不重設狀態，停止鍵仍然有效，暫停時會等候繼續
+          autoAdvancing = true; try { stepBy(1); } finally { autoAdvancing = false; }
+          const resume = () => { if (token!==speechToken) return; if (speechState==='paused') { setTimeout(resume, 200); return; } speakCard(token, voice); };
+          setTimeout(resume, 80);
+          return;
+        }
+        stopSpeech(mode==='original' ? '這一章的原文聽完了。' : '導讀聽完了，可以試試下一段的小問題。'); return;
+      }
       const item=queue[position++]; const u=new SpeechSynthesisUtterance(item.text); activeUtterance=u;
       u.lang=voice.lang;u.voice=voice;u.rate=settings.rate;
       u.onstart=()=>{if(token===speechToken){document.querySelectorAll('.spoken').forEach(n=>n.classList.remove('spoken'));item.node.classList.add('spoken');}};

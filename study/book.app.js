@@ -54,8 +54,8 @@
     blocks.forEach((b, i) => {
       const bid = `b${i}`;
       if (b.t === 'pg') {
-        if (b.inline && openP) { openP.h += `<span class="page-mark-inline" id="p${b.n}" title="原書第 ${b.n} 頁開始">第 ${b.n} 頁</span>`; openP.cont = true; return; }
-        flush(); html += `<div class="page-mark" id="p${b.n}"><span>原書第 ${b.n} 頁</span></div>`; return;
+        if (b.inline && openP) { openP.h += `<span class="page-mark-inline" aria-hidden="true" id="p${b.n}" title="原書第 ${b.n} 頁開始">第 ${b.n} 頁</span>`; openP.cont = true; return; }
+        flush(); html += `<div class="page-mark" id="p${b.n}" aria-hidden="true"><span>原書第 ${b.n} 頁</span></div>`; return;
       }
       if (b.t === 'p' && openP && openP.cont) { openP.h += esc(b.x); openP.cont = false; flush(); return; }
       flush();
