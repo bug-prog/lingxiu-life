@@ -96,3 +96,4 @@ body[data-theme=dark] .book-nav a[aria-current=true]{border-color:#78350f}
   .book-meta dd{margin-bottom:6px}
 }
 @media print{.book-sidebar,.book-switch,.ch-nav,.ch-jump{display:none}.book-layout{display:block}}
+.study-note{max-width:1324px;margin:0 auto;padding-top:8px!important;padding:0 40px;font-size:11px;line-height:1.5;color:var(--muted);opacity:.8;letter-spacing:.04em}@media(max-width:800px){.study-note{padding:0 22px}}

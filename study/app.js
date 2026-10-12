@@ -136,7 +136,7 @@
       $('card-label').textContent = '原文對照';
       $('card-title').textContent = `原書第 ${item.page} 頁`;
       const p = document.createElement('p'); p.textContent = item.text; $('card-body').replaceChildren(p);
-      $('takeaway').innerHTML = '<small>原文閱讀提示</small>這是掃描辨識文字，可能仍有錯字。跨頁的句子會接到下一頁。';
+      $('takeaway').innerHTML = '';
     } else if (step<3) {
       const card = chapter.cards[step];
       $('card-label').textContent = card.label; $('card-title').textContent = card.title;
@@ -155,7 +155,7 @@
     $('next').textContent = atEnd ? (done.has(chapter.id)?(chapter.id===14?'回到第一章 ↗':'讀下一章 →'):'記下這章已讀完 ✓') : '下一小段 →';
     $('navigation-label').textContent = mode==='easy' ? '按你的步伐來' : `第 ${step+1} 小段`;
     $('completion').textContent = done.has(chapter.id) ? '✓ 這章已記下讀完，仍可隨時重讀。' : '';
-    $('mode-note').textContent = mode==='easy' ? '依作者觀點整理 · 導讀非原文' : '保留原書文字 · 掃描辨識可能有錯字';
+    $('mode-note').textContent = mode==='easy' ? '依作者觀點整理 · 導讀非原文' : '保留原書文字';
     persist();
     if (focus) { $('card-title').focus({preventScroll:true}); $('reading-panel').scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'}); }
   }

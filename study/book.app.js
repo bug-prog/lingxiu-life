@@ -45,7 +45,7 @@
       <div class="toc-actions"><a class="button outline" href="#preface">讀序言</a><a class="button outline" href="#toc">看全書目錄</a><a class="button outline" href="#ch-1">由第一章開始</a></div></div>
       <details><summary>封面</summary><ul class="book-lines">${i.cover.map(l => `<li>${esc(l)}</li>`).join('')}</ul></details>
       <details><summary>版權頁</summary><ul class="book-lines">${i.copyright.map(l => `<li>${esc(l)}</li>`).join('')}</ul></details>
-      <details><summary>文字整理說明</summary>${i.notes.map(l => `<p class="book-note">${esc(l)}</p>`).join('')}<p class="book-note">網站版另把掃描時被硬性斷開的句子接回同一段（只調整分段，沒有改動文字），並把章節按小標題、問題解答及題號分段。原書頁碼全部保留。</p><p><a href="assets/book-part-one.txt" download>下載整理文字檔 ↓</a></p></details>`;
+      <details><summary>文字整理說明</summary>${i.notes.map(l => `<p class="book-note">${esc(l.replace(/文字經 OCR 辨識及抽樣核對，仍可能有少量辨識錯字，未作逐字人工校勘。/, ''))}</p>`).join('')}<p class="book-note">網站版另把掃描時被硬性斷開的句子接回同一段（只調整分段，沒有改動文字），並把章節按小標題、問題解答及題號分段。原書頁碼全部保留。</p><p><a href="assets/book-part-one.txt" download>下載整理文字檔 ↓</a></p></details>`;
   }
   // ---- 文字區塊
   function renderBlocks(blocks, chId) {
