@@ -97,3 +97,49 @@ body[data-theme=dark] .book-nav a[aria-current=true]{border-color:#78350f}
 }
 @media print{.book-sidebar,.book-switch,.ch-nav,.ch-jump{display:none}.book-layout{display:block}}
 .study-note{max-width:1324px;margin:0 auto;padding-top:8px!important;padding:0 40px;font-size:11px;line-height:1.5;color:var(--muted);opacity:.8;letter-spacing:.04em}@media(max-width:800px){.study-note{padding:0 22px}}
+/* 掃動提示（只在觸控裝置顯示）及轉頁動畫 */
+.swipe-hint{display:none;margin:8px 0 0;text-align:center;font-size:11px;color:var(--muted);opacity:.75;letter-spacing:.06em}
+@media(pointer:coarse){.swipe-hint{display:block}}
+.book-main>.swipe-hint{text-align:left;margin:-4px 0 10px}
+@keyframes swl{from{transform:translateX(18px);opacity:.4}to{transform:none;opacity:1}}
+@keyframes swr{from{transform:translateX(-18px);opacity:.4}to{transform:none;opacity:1}}
+.reading-card.swiped-l{animation:swl .22s ease-out}.reading-card.swiped-r{animation:swr .22s ease-out}
+@media(prefers-reduced-motion:reduce){.reading-card.swiped-l,.reading-card.swiped-r{animation:none}}
+.reading-card{touch-action:pan-y}
+/* 手機：收緊外框，讓閱讀內容盡用螢幕 */
+@media(max-width:800px){
+.study-note{padding:4px 14px 0!important;font-size:10.5px}
+.site-header{min-height:0;padding:6px 14px 8px;gap:10px}
+.brand{gap:8px}.brand-icon{width:32px;height:32px;font-size:15px;border-radius:10px 10px 3px 10px}.brand strong{font-size:18px}.brand small{display:none}
+.site-header nav{gap:6px}.site-header .button{min-height:38px;padding:6px 12px;font-size:13px}.site-header .text-button{min-height:38px;font-size:13px}.icon-button{height:38px;min-width:38px;font-size:20px}
+.book-switch,html.in-site .book-switch{margin:4px auto 0;padding:0 14px;gap:6px}
+.book-switch a{padding:7px 10px;font-size:14px;border-radius:10px;text-align:center;align-items:center}
+.book-switch a small{display:none}
+main{padding:0 14px}
+.overall-progress,html.in-site .overall-progress{margin:10px 0 10px;padding:8px 12px;border-radius:10px}
+.overall-progress small,.progress-icon{display:none}
+.workspace{gap:12px}
+.sidebar-heading{padding:4px 12px}
+.chapter-heading{margin:0 0 10px}.chapter-heading h2{font-size:22px;margin:0 0 2px}.chapter-heading p:last-child{font-size:13px}.chapter-heading .eyebrow{font-size:11px;margin-bottom:2px}
+.reader-tabs{gap:18px}.reader-tabs button{min-height:46px;padding:6px 2px 8px;gap:8px}
+.reading-tools{margin:8px 0}
+.reader-columns{grid-template-columns:1fr;gap:12px}
+.reading-card{padding:18px 16px 20px;border-radius:12px;min-height:0}
+.step-dots{margin:12px 0 14px}
+.reading-card h3{margin-bottom:12px}
+.step-navigation{margin-top:14px}
+footer{margin-top:20px;padding:14px 14px 18px;font-size:11px}
+.book-layout{padding:8px 14px 6px!important;gap:10px!important}
+.book-sidebar-inner{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
+.book-sidebar-inner .book-select{grid-column:1/-1;order:-1;min-height:42px}
+.book-sidebar-inner .book-select-label,.book-page-jump>label{display:none}
+.book-page-jump>div{display:flex;gap:6px}.book-page-jump input{width:76px;min-height:42px}.book-page-jump .button{min-height:42px;padding:6px 12px}
+#book-page-help{grid-column:1/-1;margin:0}#book-page-help:empty{display:none}
+.search-label input{min-height:42px}
+.book-main h1{font-size:23px;margin:4px 0 8px}
+.book-main .eyebrow{margin-bottom:4px}
+}
+@media(max-width:800px){html.in-site .site-header{padding:6px 14px 8px}.reader-tabs button span{display:none}.reader-tabs button{min-height:42px}html.in-site footer{padding:12px 14px 14px}}
+.book-main:focus{outline:none}
+@media(max-width:800px){.book-page-jump{border:0!important;padding:0!important;background:none!important;box-shadow:none!important}.ch-head details{margin:6px 0}.ch-head .toc-actions{margin:6px 0}.ch-jump{margin:6px 0 4px}.search-label{padding:0 10px}}
+@media(max-width:800px){.book-page-jump input{width:92px;padding:6px 8px}}

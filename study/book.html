@@ -10,7 +10,8 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="site-theme.css">
   <link rel="stylesheet" href="book.css">
-  <script src="embed.js"></script>
+  <script src="swipe.js"></script>
+<script src="embed.js"></script>
   <script src="assets/book.js" defer></script>
   <script src="book.app.js" defer></script>
 </head>
@@ -25,7 +26,7 @@
 <main class="book-layout">
   <aside class="book-sidebar" aria-label="全書導覽">
     <div class="book-sidebar-inner">
-      <label class="search-label" for="book-search"><span aria-hidden="true">⌕</span><input type="search" id="book-search" placeholder="搜尋原文（神論十四章）" autocomplete="off"></label>
+      <label class="search-label" for="book-search"><span aria-hidden="true">⌕</span><input type="search" id="book-search" placeholder="搜尋原文" aria-label="搜尋原文（神論十四章）" autocomplete="off"></label>
       <div class="book-page-jump"><label for="book-page">跳到原書頁碼</label><div><input id="book-page" type="number" inputmode="numeric" min="1" max="174" placeholder="1–174"><button id="book-page-go" class="button outline">前往</button></div><p id="book-page-help" class="field-note" role="status"></p></div>
       <label class="book-select-label" for="book-select">選擇章節</label>
       <select id="book-select" class="book-select" aria-label="選擇章節"></select>

@@ -6,30 +6,51 @@ source=ROOT/'assets/book-part-one.txt'
 s=source.read_text(encoding='utf-8-sig')
 starts=[44,53,63,74,83,92,102,111,120,127,136,146,155,164,175]
 pages={int(p):body.strip() for p,body in re.findall(r'【原書第 (\d+) 頁】\n\n(.*?)(?=\n\n【|\Z)',s,re.S)}
+END='。！？」』）”：'
+def merge(pieces):
+ # Regroup tiny cards without changing words: a short piece joins its neighbour on the
+ # same page (headings join the paragraph after them; short tails join the card before),
+ # and a short remnant that finishes a sentence carried over a page break joins the
+ # previous card. Paragraph breaks are kept as blank lines inside the card.
+ out=[]
+ for pc in pieces:
+  if out:
+   cur=out[-1];sep='\n\n' if pc['para'] else ''
+   same=cur['page']==pc['page']
+   small=len(cur['text'])<70 or len(pc['text'])<50
+   carry=(not same) and len(pc['text'])<50 and cur['text'][-1] not in END
+   if (same and small and len(cur['text'])+len(pc['text'])<=300) or carry:
+    cur['text']+=('' if carry else sep)+pc['text'];continue
+  out.append({'page':pc['page'],'text':pc['text']})
+ return out
 lessons=json.loads((ROOT/'assets/lessons.json').read_text())
 for i,lesson in enumerate(lessons):
  a,b=starts[i:i+2]
  lesson['id']=i+1
  lesson['pages']=[a,b-1]
- lesson['original']=[]
+ lesson['original']=[];pieces=[];newpara=[True]
+ def emit(page,text):
+  pieces.append({'page':page,'text':text,'para':newpara[0]});newpara[0]=False
  for page in range(a,b):
   for paragraph in pages[page].split('\n\n'):
+   newpara[0]=True
    # Keep source wording intact; break long paragraphs at sentence boundaries.
    sentences=re.findall(r'.+?[。！？](?:[」』）”])?|.+$',paragraph,re.S)
    if not sentences:sentences=[paragraph]
    chunk=''
    for sentence in sentences:
     if len(chunk)+len(sentence)>180 and chunk:
-     lesson['original'].append({'page':page,'text':chunk});chunk=''
+     emit(page,chunk);chunk=''
     # OCR may contain very long sentences. Split without deleting characters.
     while len(sentence)>240:
      cut=max(sentence.rfind('，',0,180),sentence.rfind('；',0,180))
      if cut<60:cut=179
-     if chunk:lesson['original'].append({'page':page,'text':chunk});chunk=''
-     lesson['original'].append({'page':page,'text':sentence[:cut+1]})
+     if chunk:emit(page,chunk);chunk=''
+     emit(page,sentence[:cut+1])
      sentence=sentence[cut+1:]
     chunk+=sentence
-   if chunk:lesson['original'].append({'page':page,'text':chunk})
+   if chunk:emit(page,chunk)
+ lesson['original']=merge(pieces)
  # Verify complete original character coverage, including page-spanning sentences.
  expected=''.join(pages[p].replace('\n','') for p in range(a,b))
  actual=''.join(c['text'].replace('\n','') for c in lesson['original'])

@@ -91,7 +91,7 @@
       <nav class="ch-jump" aria-label="本章內容">${jumps}</nav>
       <details><summary>本章問題（${c.questions.length} 題）</summary><ol class="toc-q">${qs}</ol></details>
       <div class="toc-actions"><a class="button outline" href="index.html#chapter-${c.id}">用淺白導讀讀這章 ↗</a></div></div>
-      <article class="book-text">${renderBlocks(c.blocks, c.id)}</article>
+      <p class="swipe-hint" aria-hidden="true">左右掃動可轉到上／下一章</p><article class="book-text">${renderBlocks(c.blocks, c.id)}</article>
       <div class="ch-nav">${prev ? `<a class="button outline" href="#ch-${prev.id}">← ${prev.no}、${esc(prev.title)}</a>` : `<a class="button outline" href="#toc">← 全書目錄</a>`}${next ? `<a class="button primary" href="#ch-${next.id}">${next.no}、${esc(next.title)} →</a>` : `<a class="button primary" href="#toc">回到全書目錄 →</a>`}</div>`;
   }
   // ---- 搜尋
@@ -143,6 +143,9 @@
     else window.scrollTo({ top: 0, behavior: 'instant' });
     if (!target && document.activeElement !== $('book-search') && document.activeElement !== $('book-select')) main.focus({ preventScroll: true });
   }
+  // 左右掃動：在章節原文中轉到上／下一章
+  if (window.studySwipe) window.studySwipe(main, () => go(1), () => go(-1));
+  function go(d) { const m = location.hash.match(/^#ch-(\d+)/); if (!m) return; const c = chById(Number(m[1]) + d); if (c) location.hash = 'ch-' + c.id; }
   addEventListener('hashchange', route);
   route();
 })();

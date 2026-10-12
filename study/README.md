@@ -91,3 +91,5 @@ node tests/smoke.cjs http://localhost:8080
 - `book.html` + `book.app.js` + `book.css`：書本資料、序言、全書目錄（第二、三部標示「未收錄原文」）、神論十四章原文（小標題分段、問題解答題號、保留原書頁碼），另有原文搜尋及按原書頁碼跳轉。
 - 資料 `assets/book.js` 由 `python3 scripts/build_book.py` 從 `assets/book-part-one.txt` 產生；改動文字檔後請重跑此腳本及 `scripts/build_content.py`。
 - 閱讀設定沿用陪伴閱讀（`slow-reader:v1`，只讀）；最後閱讀位置存於 `slow-reader:book:v1`。
+- 書中原文小段：`build_content.py` 會把同一頁內過短的小段（標題、句尾殘段）與相鄰小段合併，跨頁未完的短句接回上一段；只調整分段，文字覆蓋度有斷言檢查。
+- `swipe.js`：觸控左右掃動轉頁（陪伴閱讀：上／下一小段；全書原文：上／下一章），需水平為主且距離 ≥70px。

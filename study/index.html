@@ -10,7 +10,8 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="site-theme.css">
   <link rel="stylesheet" href="book.css">
-  <script src="embed.js"></script>
+  <script src="swipe.js"></script>
+<script src="embed.js"></script>
   <script src="assets/content.js" defer></script>
   <script src="app.js" defer></script>
 </head>
@@ -36,7 +37,7 @@
       <div class="reading-tools"><span id="mode-note">依作者觀點整理 · 導讀非原文</span><button id="focus-toggle" class="text-button" aria-pressed="false"><span aria-hidden="true">⊙</span> 專心閱讀</button></div>
       <div class="reader-columns"><div class="reader-main"><div id="reading-panel" role="tabpanel" aria-labelledby="easy-tab"><article class="reading-card"><div class="card-top"><span id="card-label"></span><span id="card-count"></span></div><div class="step-dots" id="step-dots" aria-label="這章的小段落"></div><h3 id="card-title" tabindex="-1"></h3><div id="card-body" class="reading-text"></div><div id="takeaway" class="takeaway"></div><div id="quiz-feedback" class="feedback" role="status"></div></article></div>
         <div class="audio-bar"><button id="speak" class="button audio-button"><span aria-hidden="true">▷</span> 聽這一段</button><button id="speech-stop" class="text-button" disabled>停止</button><span id="audio-status">可以跟着文字慢慢聽</span></div>
-        <div class="step-navigation"><button id="prev" class="button outline">← 上一小段</button><span id="navigation-label"></span><button id="next" class="button primary">下一小段 →</button></div>
+        <div class="step-navigation"><button id="prev" class="button outline">← 上一小段</button><span id="navigation-label"></span><button id="next" class="button primary">下一小段 →</button></div><p class="swipe-hint" aria-hidden="true">左右掃動可轉頁</p>
         <p id="completion" class="completion" role="status"></p>
         <details class="original-jump" id="original-jump"><summary>想找書中某一頁？</summary><label for="source-page">跳到原書頁碼</label><div><input id="source-page" type="number" inputmode="numeric"><button id="page-go" class="button outline">前往原文</button></div><p id="page-help"></p></details>
       </div>

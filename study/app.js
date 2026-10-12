@@ -135,7 +135,7 @@
       const item = chapter.original[step];
       $('card-label').textContent = '原文對照';
       $('card-title').textContent = `原書第 ${item.page} 頁`;
-      const p = document.createElement('p'); p.textContent = item.text; $('card-body').replaceChildren(p);
+      $('card-body').replaceChildren(...item.text.split('\n\n').map(t => { const p = document.createElement('p'); p.textContent = t; return p; }));
       $('takeaway').innerHTML = '';
     } else if (step<3) {
       const card = chapter.cards[step];
@@ -300,4 +300,7 @@
   chapter=lessons[initialChapter-1];
   history.replaceState(null,'',`#chapter-${chapter.id}`);
   renderChapter();
+  // 左右掃動：與「上一小段／下一小段」按鈕相同（按鈕停用時不動）
+  const swipeTo = id => { const b = $(id); if (b && !b.disabled) { b.click(); const c = document.querySelector('.reading-card'); if (c) { c.classList.remove('swiped-l','swiped-r'); void c.offsetWidth; c.classList.add(id==='next'?'swiped-l':'swiped-r'); } } };
+  if (window.studySwipe) window.studySwipe($('reader'), () => swipeTo('next'), () => swipeTo('prev'));
 })();
