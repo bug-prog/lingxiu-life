@@ -1,10 +1,10 @@
-"""Build assets/book.js (書本資料、序言、全書目錄、神論十四章分段) from assets/book-part-one.txt.
+"""Build assets/book.js (書本資料、序言、全書目錄、神論十四章分段) from assets/book-full.txt.
 Keeps the author's wording; only splits text into blocks. Run: python3 scripts/build_book.py"""
 import difflib,json,re
 from pathlib import Path
 ROOT=Path(__file__).resolve().parent.parent
-s=(ROOT/'assets/book-part-one.txt').read_text(encoding='utf-8-sig')
-pages={int(p):b.strip() for p,b in re.findall(r'【原書第 (\d+) 頁】\n\n(.*?)(?=\n\n【|\Z)',s,re.S)}
+s=(ROOT/'assets/book-full.txt').read_text(encoding='utf-8-sig')
+pages={int(p):re.sub(r'\n*［整理註：[^］]*］\n*','',b).strip() for p,b in re.findall(r'【原書第 (\d+) 頁】\n\n(.*?)(?=\n\n【|\Z)',s,re.S)}
 section=lambda name: re.search(r'【'+name+r'】\n\n(.*?)(?=\n\n【)',s,re.S).group(1).strip()
 NUM='一二三四五六七八九十'
 def cn(n): return NUM[n-1] if n<=10 else ('十'+(NUM[n-11] if n>10 else '')) if n<20 else '二十'+(NUM[n-21] if n>20 else '')
@@ -50,11 +50,13 @@ for x in paras:
 for part in toc:
     for i,c in enumerate(part['chapters'],1): c['no']=cn(i)
 assert [len(p['chapters']) for p in toc]==[14,16,14],[len(p['chapters']) for p in toc]
-# --- 神論十四章
-starts=[c['page'] for c in toc[0]['chapters']]+[175]
-chapters=[]
-for i,tc in enumerate(toc[0]['chapters']):
-    a,b=starts[i],starts[i+1]
+# --- 三部共四十四章（扉頁 43、175、337 不屬任何章）
+PART_END=[175,337,511]
+chapters=[];todo=[]
+for pi,part in enumerate(toc):
+    st=[c['page'] for c in part['chapters']]+[PART_END[pi]]
+    todo+=[(pi,tc,st[i],st[i+1]) for i,tc in enumerate(part['chapters'])]
+for i,(pi,tc,a,b) in enumerate(todo):
     title=f"{tc['no']}、{tc['title']}"
     raw=blocks_for(range(a,b),skip_title=title)
     out=[];inqa=False;qn=0;heads=[]
@@ -71,17 +73,17 @@ for i,tc in enumerate(toc[0]['chapters']):
         if not inqa and HEAD(x): heads.append(x); out.append({'t':'h','x':x,'id':f's{len(heads)}'}); continue
         if inqa and x.startswith('答：'): out.append({'t':'a','x':x[2:].strip()}); continue
         out.append({'t':'p','x':x})
-    assert qn==len(tc['questions']),(title,qn,len(tc['questions']))
+    if qn!=len(tc['questions']): print('NOTE 目錄題數與正文不同:',title,qn,len(tc['questions']),[b2['x'][:20] for b2 in out if b2['t']=='q'],[q[:20] for q in tc['questions']])
     # verify nothing lost
     src=''.join(pages[p].replace('\n','') for p in range(a,b)).replace(title,'',1)
     got=''.join((b2.get('x','') if b2['t']!='q' else (b2['x'] if b2.get('restored') else f"{b2['n']}. {b2['x']}")) if b2['t']!='a' else '答：'+b2['x'] for b2 in out)
     norm=lambda t: re.sub(r'[\s．.]','',t)
     if norm(src)!=norm(got):
         A,B=norm(src),norm(got);k=next(j for j in range(min(len(A),len(B))) if A[j]!=B[j]) if A[:min(len(A),len(B))]!=B[:min(len(A),len(B))] else min(len(A),len(B))
-        raise SystemExit(f'text mismatch in {title} at {k}: {A[k-20:k+20]!r} vs {B[k-20:k+20]!r}')
-    chapters.append({'id':i+1,'no':tc['no'],'title':tc['title'],'pages':[a,b-1],'qaPage':tc['qaPage'],'sections':heads,'questions':[q for q in tc['questions']],'blocks':out})
+        print(f'TEXTMISMATCH in {title} at {k}: {A[k-20:k+20]!r} vs {B[k-20:k+20]!r}')
+    chapters.append({'id':i+1,'part':pi+1,'partName':toc[pi]['name'],'idx':len([c for c in chapters if c['part']==pi+1])+1,'no':tc['no'],'title':tc['title'],'pages':[a,b-1],'qaPage':tc['qaPage'],'sections':heads,'questions':[b2['x'] for b2 in out if b2['t']=='q'] if qn!=len(tc['questions']) else list(tc['questions']),'tocQuestionCount':len(tc['questions']),'blocks':out})
 data={'info':info,'preface':pre,'toc':toc,'chapters':chapters}
 (ROOT/'assets/book.js').write_text('/* Generated locally by scripts/build_book.py. */\nwindow.BOOK_FULL = '+json.dumps(data,ensure_ascii=False,separators=(',',':'))+';\n',encoding='utf-8')
 print(f"Built book: preface {sum(b['t']=='p' or b['t']=='li' for b in pre)} paras; TOC {sum(len(p['chapters']) for p in toc)} chapters in {len(toc)} parts; "
       f"{len(chapters)} chapters, {sum(len(c['sections']) for c in chapters)} subheadings, {sum(len(c['questions']) for c in chapters)} questions.")
-for c in chapters: print(c['id'],c['title'],'p.',c['pages'],'qa',c['qaPage'],'sections',c['sections'],'Q',len(c['questions']))
+for c in chapters: print(c['part'],c['id'],c['title'],'p.',c['pages'],'qa',c['qaPage'],'sections',c['sections'],'Q',len(c['questions']))

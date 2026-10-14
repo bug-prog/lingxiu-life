@@ -56,7 +56,7 @@
     theme:['paper','white','dark'].includes(pref.theme) ? pref.theme : 'paper',
     rate:clamp(pref.rate ?? defaults.rate,0.5,1.2,0.85), voice:typeof pref.voice === 'string' ? pref.voice : ''
   };
-  const validIds = list => Array.isArray(list) ? [...new Set(list.filter(n=>Number.isInteger(n)&&n>=1&&n<=14))] : [];
+  const validIds = list => Array.isArray(list) ? [...new Set(list.filter(n=>Number.isInteger(n)&&n>=1&&n<=lessons.length))] : [];
   const done = new Set(validIds(saved.done));
   const bookmarks = new Set(validIds(saved.bookmarks));
   const positions = {};
@@ -64,7 +64,10 @@
     const v = saved.positions?.[l.id] || {};
     positions[l.id] = { easy:Math.floor(clamp(v.easy ?? 0,0,3,0)), original:Math.floor(clamp(v.original ?? 0,0,l.original.length-1,0)) };
   });
-  let chapter = lessons[0], mode = saved.mode === 'original' ? 'original' : 'easy';
+  let chapter = lessons[0], mode = saved.mode === 'original' ? 'original' : 'easy', userMode = mode;
+  const cnPart = ['一','二','三'];
+  // 第二、三部只有原文卡（未有淺白導讀）：進入時暫用原文模式，離開後回復讀者原本的選擇
+  function syncMode() { mode = chapter.originalOnly ? 'original' : userMode; $('easy-tab').hidden = !!chapter.originalOnly; $('easy-tab').style.display = chapter.originalOnly ? 'none' : ''; }
   let onlyBookmarks = false, focusMode = false, quizSelection = null, hintOpen = false;
   const speech = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window ? window.speechSynthesis : null;
   let voices = [], speechToken = 0, speechState = 'idle', activeUtterance = null;
@@ -73,7 +76,7 @@
   function announce(text) { $('announcement').textContent = text; }
   function persist() {
     try {
-      localStorage.setItem(STORAGE,JSON.stringify({version:1,settings,done:[...done],bookmarks:[...bookmarks],positions,chapter:chapter.id,mode}));
+      localStorage.setItem(STORAGE,JSON.stringify({version:1,settings,done:[...done],bookmarks:[...bookmarks],positions,chapter:chapter.id,mode:userMode}));
       storageAvailable = true;
     } catch { storageAvailable = false; }
     $('progress-sub').textContent = storageAvailable ? (done.size ? '隨時回來，接着上次的位置讀' : '從任何一章開始都可以') : '此瀏覽器未能儲存進度；目前仍可閱讀';
@@ -90,20 +93,21 @@
     if (voices.length) $('voice').value = settings.voice;
   }
   function renderProgress() {
-    $('overall-meter').value = done.size;
-    $('progress-number').textContent = `${done.size} / 14 章`;
-    $('progress-label').textContent = done.size === 14 ? '十四章都留下了你的足跡' : '你的閱讀旅程';
+    $('overall-meter').max = lessons.length; $('overall-meter').value = done.size;
+    $('progress-number').textContent = `${done.size} / ${lessons.length} 章`;
+    $('progress-label').textContent = done.size === lessons.length ? '全書每一章都留下了你的足跡' : '你的閱讀旅程';
     persist();
   }
   function renderCatalog() {
     const query = $('chapter-search').value.trim().toLocaleLowerCase();
     const found = lessons.filter(l => (!onlyBookmarks || bookmarks.has(l.id)) && [l.title,l.short,...l.terms].join(' ').toLocaleLowerCase().includes(query));
     $('chapter-count').textContent = `${found.length} 章`;
-    let group = '';
+    let group = '', part = 0;
     $('chapter-list').innerHTML = found.map(l => {
       let title = '';
-      if (l.group !== group) { group = l.group; title = `<h3 class="chapter-group">${escapeHTML(group)}</h3>`; }
-      return title+`<a href="#chapter-${l.id}" class="chapter-link" ${l.id===chapter.id?'aria-current="true"':''}><span class="chapter-num">${String(l.id).padStart(2,'0')}</span><span class="chapter-name">${escapeHTML(l.title)}</span>${done.has(l.id)?'<span class="chapter-check" aria-label="已讀完">✓</span>':bookmarks.has(l.id)?'<span class="chapter-check" aria-label="已收藏">★</span>':''}</a>`;
+      if (l.part !== part) { part = l.part; group = ''; title += `<h3 class="chapter-group chapter-part">第${cnPart[part-1]}部　${escapeHTML(l.partName)}</h3>`; }
+      if (l.group && l.group !== group) { group = l.group; title += `<h3 class="chapter-group">${escapeHTML(group)}</h3>`; }
+      return title+`<a href="#chapter-${l.id}" class="chapter-link" ${l.id===chapter.id?'aria-current="true"':''}><span class="chapter-num">${String(l.idx).padStart(2,'0')}</span><span class="chapter-name">${escapeHTML(l.title)}</span>${done.has(l.id)?'<span class="chapter-check" aria-label="已讀完">✓</span>':bookmarks.has(l.id)?'<span class="chapter-check" aria-label="已收藏">★</span>':''}</a>`;
     }).join('') || `<p class="empty-state">${onlyBookmarks?'這裡還沒有符合的收藏。按章節旁的星星，就能收藏。':'找不到這個章節。試試「恩典」或「神」。'}</p>`;
   }
   function renderTerms(target, terms) {
@@ -154,7 +158,7 @@
     }
     $('prev').disabled = step===0;
     const atEnd = step===count-1;
-    $('next').textContent = atEnd ? (done.has(chapter.id)?(chapter.id===14?'回到第一章 ↗':'讀下一章 →'):'記下這章已讀完 ✓') : '下一小段 →';
+    $('next').textContent = atEnd ? (done.has(chapter.id)?(chapter.id===lessons.length?'回到第一章 ↗':'讀下一章 →'):'記下這章已讀完 ✓') : '下一小段 →';
     $('navigation-label').textContent = mode==='easy' ? '按你的步伐來' : `第 ${step+1} 小段`;
     $('completion').textContent = done.has(chapter.id) ? '✓ 這章已記下讀完，仍可隨時重讀。' : '';
     $('mode-note').textContent = mode==='easy' ? '依作者觀點整理 · 導讀非原文' : '保留原書文字';
@@ -162,14 +166,14 @@
     if (focus) { $('card-title').focus({preventScroll:true}); $('reading-panel').scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'}); }
   }
   function renderChapter(focus=false) {
-    quizSelection = null; hintOpen = false;
-    $('chapter-meta').textContent = `第一部 · 第 ${String(chapter.id).padStart(2,'0')} 章 / 14　·　原書 ${chapter.pages[0]}–${chapter.pages[1]} 頁`;
+    quizSelection = null; hintOpen = false; syncMode();
+    $('chapter-meta').textContent = `第${cnPart[chapter.part-1]}部 ${chapter.partName} · 第 ${String(chapter.idx).padStart(2,'0')} 章 / ${lessons.filter(l=>l.part===chapter.part).length}　·　原書 ${chapter.pages[0]}–${chapter.pages[1]} 頁`;
     $('chapter-title').textContent = chapter.title;
     $('chapter-subtitle').textContent = chapter.short;
     document.title = `${chapter.title} · 慢慢讀`;
     $('source-page').min=chapter.pages[0]; $('source-page').max=chapter.pages[1]; $('source-page').value=chapter.pages[0];
     $('page-help').textContent = `本章原書第 ${chapter.pages[0]}–${chapter.pages[1]} 頁。`;
-    renderCatalog();renderTerms('chapter-glossary',chapter.terms);updateBookmark();updateTabs();renderCard();renderProgress();
+    renderCatalog();if (chapter.terms.length) renderTerms('chapter-glossary',chapter.terms); else $('chapter-glossary').innerHTML='<p class="empty-state">這一章暫未整理詞語；可按「詞語小幫手」查全部詞語。</p>';updateBookmark();updateTabs();renderCard();renderProgress();
     if (focus) { $('reader').focus({preventScroll:true}); $('reader').scrollIntoView({block:'start'}); }
   }
   function updateTabs() {
@@ -178,7 +182,7 @@
       $(`${name}-tab`).tabIndex=name===mode?0:-1;
     });
   }
-  function setMode(nextMode,focusCard=false) { mode=nextMode;updateTabs();renderCard(focusCard); }
+  function setMode(nextMode,focusCard=false) { if (chapter.originalOnly) nextMode='original'; else userMode=nextMode; mode=nextMode;updateTabs();renderCard(focusCard); }
   function readRoute(focus=false) {
     const id = Number(location.hash.match(/^#chapter-(\d+)$/)?.[1]);
     if (id>=1 && id<=lessons.length) {
@@ -269,7 +273,7 @@
     if (!done.has(chapter.id)) {
       done.add(chapter.id);renderProgress();renderCatalog();renderCard();
       announce('這章已記下讀完。你可以休息，或讀下一章。');
-    } else {mode='easy';location.hash=`chapter-${chapter.id===14?1:chapter.id+1}`;}
+    } else {location.hash=`chapter-${chapter.id===lessons.length?1:chapter.id+1}`;}
   });
   $('card-body').addEventListener('click',e=>{
     const answer=e.target.closest('[data-answer]');if(answer){stopSpeech();showAnswer(Number(answer.dataset.answer));}
@@ -312,7 +316,7 @@
   document.addEventListener('keydown',e=>{if(e.key==='Escape'){const modal=document.querySelector('dialog[open]');if(modal){e.preventDefault();modal.close();return;}stopSpeech('已停止朗讀。');if(focusMode)$('focus-toggle').click();}});
   applySettings();
   const initialHash=Number(location.hash.match(/^#chapter-(\d+)$/)?.[1]);
-  const initialChapter=initialHash>=1&&initialHash<=14?initialHash:Math.floor(clamp(saved.chapter??1,1,14,1));
+  const initialChapter=initialHash>=1&&initialHash<=lessons.length?initialHash:Math.floor(clamp(saved.chapter??1,1,lessons.length,1));
   chapter=lessons[initialChapter-1];
   history.replaceState(null,'',`#chapter-${chapter.id}`);
   renderChapter();

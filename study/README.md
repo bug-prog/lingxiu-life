@@ -1,6 +1,6 @@
 # 慢慢讀 · 福音神學陪伴閱讀
 
-為希望減少閱讀負擔的繁體中文讀者設計，也適合有輕度讀寫困難的人使用。把《福音神學暨福音難題解答（修訂版）》第一部「神論」十四章，整理成一次一小段的閱讀空間。
+為希望減少閱讀負擔的繁體中文讀者設計，也適合有輕度讀寫困難的人使用。把《福音神學暨福音難題解答（修訂版）》全書三部共 44 章（第一部「神論」14 章另有淺白導讀），整理成一次一小段的閱讀空間。
 
 ## 已有功能
 
@@ -44,7 +44,7 @@ python3 -m http.server 8080
 - `styles.css`：版面、主題、響應式設計及可讀性設定。
 - `app.js`：操作、語音、詞語解釋及進度。
 - `assets/lessons.json`：十四章手工編寫的淺白導讀及理解題，可直接修改。
-- `assets/book-part-one.txt`：本次 PDF 整理文字，含封面、版權、序言及全書目錄。
+- `assets/book-full.txt`：全書整理文字（封面、版權、序言、全書目錄、原書第 1–510 頁）；第一部沿用 `assets/book-part-one.txt` 的已整理版本。
 - `scripts/build_content.py`：按原書頁碼分章及切段，保留文字，產生 `assets/content.js`。
 - `assets/content.js`：網站直接讀取的內容資料；已產生，上載即可用。
 
@@ -88,8 +88,8 @@ node tests/smoke.cjs http://localhost:8080
 
 ## 全書目錄與原文頁（book.html）
 
-- `book.html` + `book.app.js` + `book.css`：書本資料、序言、全書目錄（第二、三部標示「未收錄原文」）、神論十四章原文（小標題分段、問題解答題號、保留原書頁碼），另有原文搜尋及按原書頁碼跳轉。
-- 資料 `assets/book.js` 由 `python3 scripts/build_book.py` 從 `assets/book-part-one.txt` 產生；改動文字檔後請重跑此腳本及 `scripts/build_content.py`。
+- `book.html` + `book.app.js` + `book.css`：書本資料、序言、全書目錄、三部 44 章原文（小標題分段、問題解答題號、保留原書頁碼），另有原文搜尋及按原書頁碼跳轉。
+- 資料 `assets/book.js` 由 `python3 scripts/build_book.py` 從 `assets/book-full.txt` 產生；改動文字檔後請重跑此腳本及 `scripts/build_content.py`。
 - 閱讀設定沿用陪伴閱讀（`slow-reader:v1`，只讀）；最後閱讀位置存於 `slow-reader:book:v1`。
 - 書中原文小段：`build_content.py` 會把同一頁內過短的小段（標題、句尾殘段）與相鄰小段合併，跨頁未完的短句接回上一段；只調整分段，文字覆蓋度有斷言檢查。
 - `swipe.js`：觸控左右掃動轉頁（陪伴閱讀：上／下一小段；全書原文：上／下一章），需水平為主且距離 ≥70px。

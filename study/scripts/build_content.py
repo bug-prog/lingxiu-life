@@ -2,10 +2,10 @@
 import json,re
 from pathlib import Path
 ROOT=Path(__file__).resolve().parent.parent
-source=ROOT/'assets/book-part-one.txt'
+source=ROOT/'assets/book-full.txt'
 s=source.read_text(encoding='utf-8-sig')
-starts=[44,53,63,74,83,92,102,111,120,127,136,146,155,164,175]
-pages={int(p):body.strip() for p,body in re.findall(r'【原書第 (\d+) 頁】\n\n(.*?)(?=\n\n【|\Z)',s,re.S)}
+BOOK=json.loads((ROOT/'assets/book.js').read_text(encoding='utf-8').split('=',1)[1].strip().rstrip(';'))
+pages={int(p):re.sub(r'\n*［整理註：[^］]*］\n*','',body).strip() for p,body in re.findall(r'【原書第 (\d+) 頁】\n\n(.*?)(?=\n\n【|\Z)',s,re.S)}
 END='。！？」』）”：'
 def merge(pieces):
  # Regroup tiny cards without changing words: a short piece joins its neighbour on the
@@ -24,8 +24,12 @@ def merge(pieces):
   out.append({'page':pc['page'],'text':pc['text']})
  return out
 lessons=json.loads((ROOT/'assets/lessons.json').read_text())
+# 第二、三部未有淺白導讀：只建立原文卡（originalOnly）
+for c in BOOK['chapters'][len(lessons):]:
+ lessons.append({'title':c['title'],'short':f"第{'一二三'[c['part']-1]}部 · {c['partName']}",'group':'','icon':'','terms':[],'cards':None,'quiz':None,'originalOnly':True})
 for i,lesson in enumerate(lessons):
- a,b=starts[i:i+2]
+ bc=BOOK['chapters'][i];a,b=bc['pages'][0],bc['pages'][1]+1
+ lesson['part']=bc['part'];lesson['partName']=bc['partName'];lesson['no']=bc['no'];lesson['idx']=bc['idx']
  lesson['id']=i+1
  lesson['pages']=[a,b-1]
  lesson['original']=[];pieces=[];newpara=[True]
