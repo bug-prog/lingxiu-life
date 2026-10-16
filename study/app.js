@@ -164,7 +164,7 @@
     $('navigation-label').textContent = mode==='easy' ? '按你的步伐來' : `第 ${step+1} 小段`;
     $('completion').textContent = done.has(chapter.id) ? '✓ 這章已記下讀完，仍可隨時重讀。' : '';
     $('mode-note').textContent = mode==='easy' ? '依作者觀點整理 · 導讀非原文' : '保留原書文字';
-    persist();
+    bmSplit(); persist(); bmOnCard();
     if (focus) { $('card-title').focus({preventScroll:true}); $('reading-panel').scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'}); }
   }
   function renderChapter(focus=false) {
@@ -225,8 +225,10 @@
     if (voices.some(v=>v.voiceURI===settings.voice))select.value=settings.voice;
     else if (settings.voice && voices.length) { settings.voice='';persist(); }
   }
-  function speak() {
+  function speak(startPara = 0, startSent = 0) {
     if (!speech) return;
+    if (typeof startPara !== 'number') startPara = 0;
+    if (typeof startSent !== 'number') startSent = 0;
     if (speechState==='speaking') {speech.pause();speechState='paused';$('speak').textContent='▷ 繼續朗讀';$('audio-status').textContent='已暫停；可以隨時繼續';return;}
     if (speechState==='paused') {speech.resume();speechState='speaking';$('speak').textContent='Ⅱ 暫停朗讀';$('audio-status').textContent='正在朗讀這一段';return;}
     stopSpeech(); populateVoices();
@@ -235,19 +237,21 @@
     const token=++speechToken;
     speechState='speaking'; $('speak').textContent='Ⅱ 暫停朗讀';$('speech-stop').disabled=false;
     $('audio-status').textContent='正在朗讀；讀完會自動接下一段，直至本章完';
-    speakCard(token, voice);
+    speakCard(token, voice, startPara, startSent);
   }
-  function speakCard(token, voice) {
+  function speakCard(token, voice, startPara = 0, startSent = 0) {
     const items = mode==='original' ? [] : [{text:$('card-title').textContent,node:$('card-title')}];
-    $('card-body').querySelectorAll('p:not([hidden]), .quiz-option').forEach(node=>items.push({text:node.textContent,node}));
+    $('card-body').querySelectorAll('p:not([hidden]), .quiz-option').forEach(node=>{ const sn=node.querySelectorAll(':scope > .sn'); if (sn.length) sn.forEach((x,j)=>items.push({text:x.textContent,node,sent:j})); else items.push({text:node.textContent,node}); });
     if ($('takeaway').textContent)items.push({text:$('takeaway').textContent,node:$('takeaway')});
     // Short utterances avoid long-text voice limits. After a card ends, continue with the next card of the same chapter
     // (原文: to the last card; 導讀: the three cards, stopping before the quiz). Never jumps to another chapter.
     const queue=items.flatMap(item=>{
       const chunks=item.text.match(/[^。！？；\n]+[。！？；\n]?/g)||[item.text];
-      return chunks.flatMap(text=>Array.from({length:Math.ceil(text.length/110)},(_,i)=>({text:text.slice(i*110,(i+1)*110),node:item.node})));
+      return chunks.flatMap(text=>Array.from({length:Math.ceil(text.length/110)},(_,i)=>({text:text.slice(i*110,(i+1)*110),node:item.node,sent:item.sent||0})));
     }).filter(item=>item.text.trim());
     let position=0;
+    // 由書籤位置開始：跳過該段之前的內容（之後的卡照常由頭讀）
+    if (startPara>0 || startSent>0) { const target=bmParas()[startPara]; const k=target?queue.findIndex(q=>q.node===target&&q.sent>=startSent):-1; if (k>0) position=k; }
     function playNext() {
       if (token!==speechToken)return;
       if (position>=queue.length) {
@@ -263,7 +267,7 @@
       }
       const item=queue[position++]; const u=new SpeechSynthesisUtterance(item.text); activeUtterance=u;
       u.lang=voice.lang;u.voice=voice;u.rate=settings.rate;
-      u.onstart=()=>{if(token===speechToken){document.querySelectorAll('.spoken').forEach(n=>n.classList.remove('spoken'));item.node.classList.add('spoken');}};
+      u.onstart=()=>{if(token===speechToken){document.querySelectorAll('.spoken').forEach(n=>n.classList.remove('spoken'));item.node.classList.add('spoken');bmSpoken(item.node,item.sent);}};
       u.onend=playNext;
       u.onerror=e=>{if(token===speechToken && !['interrupted','canceled'].includes(e.error))stopSpeech('暫時無法朗讀。可在閱讀設定換一個中文語音。');};
       speech.speak(u);
@@ -312,17 +316,117 @@
     $(id).addEventListener('input',()=>{settings[key]=['theme','voice'].includes(key)?$(id).value:Number($(id).value);if(['rate','voice'].includes(key))stopSpeech('語音設定已更新，按聽這一段重新開始。');applySettings();persist();});
   });
   $('settings-reset').addEventListener('click',()=>{settings={...defaults};stopSpeech();applySettings();persist();announce('閱讀設定已還原，閱讀進度保留。');});
-  $('speak').addEventListener('click',speak);$('speech-stop').addEventListener('click',()=>stopSpeech('已停止朗讀。'));
+  $('speak').addEventListener('click',()=>speak());$('speech-stop').addEventListener('click',()=>stopSpeech('已停止朗讀。'));
   if(speech){populateVoices();speech.addEventListener('voiceschanged',populateVoices);}
   addEventListener('hashchange',()=>readRoute(true));
   addEventListener('pagehide',()=>{if(speech)speech.cancel();});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'){const modal=document.querySelector('dialog[open]');if(modal){e.preventDefault();modal.close();return;}stopSpeech('已停止朗讀。');if(focusMode)$('focus-toggle').click();}});
+  // ================= 書籤（閱讀位置）：獨立 localStorage key，不影響原有進度 =================
+  const BKEY = STORAGE.replace(/:v1$/,'') + ':marks:v1';
+  const bmLoad = () => { try { const v = JSON.parse(localStorage.getItem(BKEY) || 'null'); return v && typeof v === 'object' ? { last: v.last || null, marks: Array.isArray(v.marks) ? v.marks : [] } : { last:null, marks:[] }; } catch { return { last:null, marks:[] }; } };
+  let bm = bmLoad(), bmPara = 0, bmSent = 0, bmRestoring = false;
+  const bmSave = () => { try { localStorage.setItem(BKEY, JSON.stringify(bm)); } catch {} };
+  const bmParas = () => [...$('card-body').querySelectorAll(':scope > p:not([hidden])')];
+  const bmValid = m => m && lessons[m.chapter-1] && ['easy','original'].includes(m.mode);
+  const pad2 = n => String(n).padStart(2,'0');
+  const bmDate = t => { const d = new Date(t); return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`; };
+  const bmWhere = m => { const l = lessons[m.chapter-1]; return `${CONF.noPages ? '第 '+l.idx+' 課' : '第 '+l.id+' 章'}《${l.title}》· ${m.mode==='easy'?'導讀':'原文'}第 ${m.card+1} 小段${m.para>0?' · 第 '+(m.para+1)+' 段':''}${m.sent>0?' · 第 '+(m.sent+1)+' 句':''}`; };
+  const bmNode = (para, sent) => { const p = bmParas()[para]; if (!p) return $('card-title'); return p.querySelectorAll(':scope > .sn')[sent] || p; };
+  function bmHere() {
+    const ps = bmParas(), para = Math.min(bmPara, Math.max(0, ps.length-1));
+    const node = bmNode(para, bmSent), sent = node.classList.contains('sn') ? bmSent : 0;
+    return { chapter:chapter.id, mode, card:current(), para, sent, ts:Date.now(), snippet:(node.textContent||'').trim().slice(0,48) };
+  }
+  function bmAutoSave() { if (bmRestoring) return; bm.last = bmHere(); bmSave(); bmRenderResume(); }
+  function bmOnCard() { if (!bmRestoring) { bmPara = 0; bmSent = 0; bmAutoSave(); } bmRenderCount(); }
+  function bmSpoken(node, sent = 0) { const k = bmParas().indexOf(node); if (k >= 0 && (k !== bmPara || sent !== bmSent)) { bmPara = k; bmSent = sent; bmAutoSave(); } }
+  // 把段落按句子包成 <span class="sn">，用來記下句子位置（文字內容不變，朗讀照讀段落文字）
+  function bmSplit() {
+    bmParas().forEach(p => { if (p.children.length || !p.textContent.trim()) return;
+      const parts = p.textContent.match(/[^。！？；\n]+[。！？；\n]?/g); if (!parts || parts.length < 2) return;
+      p.replaceChildren(...parts.map(t => { const x = document.createElement('span'); x.className = 'sn'; x.textContent = t; return x; })); });
+  }
+  // 捲動時記下畫面上最先看到的段落（朗讀中以朗讀位置為準）
+  let bmScrollT = 0, bmActed = false;
+  // 只在讀者自己捲動後才記錄（避免瀏覽器還原捲動位置時覆蓋書籤）
+  ['wheel','touchmove','keydown','pointerdown'].forEach(t => addEventListener(t, () => { bmActed = true; }, { passive:true, capture:true }));
+  addEventListener('scroll', () => { clearTimeout(bmScrollT); bmScrollT = setTimeout(() => {
+    if (speechState !== 'idle' || bmRestoring || !bmActed) return;
+    const ps = bmParas(); if (!ps.length) return;
+    const r0 = $('card-body').getBoundingClientRect(); if (r0.bottom < 0 || r0.top > innerHeight) return;
+    let k = -1, j = 0;
+    for (let i = 0; i < ps.length && k < 0; i++) { const sn = ps[i].querySelectorAll(':scope > .sn'); const units = sn.length ? [...sn] : [ps[i]];
+      for (let u = 0; u < units.length; u++) { const r = units[u].getClientRects()[0] || units[u].getBoundingClientRect(); if (r.top >= -4) { k = i; j = sn.length ? u : 0; break; } } }
+    if (k < 0) { k = ps.length-1; j = 0; }
+    if (k !== bmPara || j !== bmSent) { bmPara = k; bmSent = j; bmAutoSave(); }
+  }, 300); }, { passive:true });
+  function bmFlash(node) { if (!node) return; node.classList.remove('bm-flash'); void node.offsetWidth; node.classList.add('bm-flash'); setTimeout(() => node.classList.remove('bm-flash'), 2600); }
+  function bmGo(m, thenSpeak = false) {
+    if (!bmValid(m)) return;
+    stopSpeech(); bmRestoring = true;
+    try {
+      chapter = lessons[m.chapter-1];
+      if (!chapter.originalOnly) userMode = m.mode;
+      syncMode();
+      positions[chapter.id][mode] = Math.floor(clamp(m.card, 0, total()-1, 0));
+      history.replaceState(null, '', `#chapter-${chapter.id}`);
+      $('catalog-body').classList.remove('open');
+      renderChapter();
+    } finally { bmRestoring = false; }
+    const ps = bmParas(); bmPara = Math.min(m.para||0, Math.max(0, ps.length-1));
+    const node = bmNode(bmPara, m.sent||0); bmSent = node.classList.contains('sn') ? (m.sent||0) : 0;
+    node.scrollIntoView({ block: bmPara > 0 || bmSent > 0 ? 'center' : 'start', behavior: 'instant' });
+    bmFlash(node); bmAutoSave();
+    announce('已回到書籤位置：' + bmWhere(m));
+    if (thenSpeak) speak(bmPara, bmSent);
+  }
+  // ---- 介面（放在卡片以外，朗讀不會讀到）
+  const bar = document.createElement('div');
+  bar.className = 'rbm-bar'; bar.setAttribute('data-no-swipe', '');
+  bar.innerHTML = `<button id="rbm-resume" class="button primary rbm-resume" hidden><span class="rbm-t"><span aria-hidden="true">↺</span> 繼續上次閱讀</span><small id="rbm-resume-sub"></small></button>
+    <div class="rbm-acts"><button id="rbm-add" class="button outline"><span aria-hidden="true">🔖</span> 加書籤</button><button id="rbm-list-toggle" class="text-button" aria-expanded="false" aria-controls="rbm-panel">我的書籤 <span id="rbm-count">0</span></button></div>
+    <div id="rbm-panel" class="rbm-panel" hidden><p class="rbm-tip">書籤只存在這部裝置的瀏覽器。名稱可直接修改。</p><ul id="rbm-list" class="rbm-list"></ul></div>`;
+  document.querySelector('.reading-tools').after(bar);
+  const fromBm = document.createElement('button');
+  fromBm.id = 'rbm-speak'; fromBm.className = 'text-button rbm-speak'; fromBm.innerHTML = '<span aria-hidden="true">🔖▷</span> 由書籤位置開始朗讀'; fromBm.hidden = true;
+  $('speech-stop').after(fromBm);
+  function bmRenderResume() {
+    const m = bm.last, ok = bmValid(m) && !!speech;
+    $('rbm-resume').hidden = !bmValid(m); fromBm.hidden = !ok;
+    if (bmValid(m)) $('rbm-resume-sub').textContent = bmWhere(m) + (m.snippet ? `「${m.snippet}…」` : '');
+  }
+  function bmRenderCount() { $('rbm-count').textContent = bm.marks.length ? `（${bm.marks.length}）` : ''; }
+  function bmRenderList() {
+    bmRenderCount();
+    $('rbm-list').innerHTML = bm.marks.length ? bm.marks.map((m, i) => `<li data-i="${i}"><input class="rbm-name" value="${escapeHTML(m.name||'')}" aria-label="書籤名稱" maxlength="40"><small>${bmDate(m.ts)} · ${escapeHTML(bmValid(m)?bmWhere(m):'')}</small><span class="rbm-snip">${escapeHTML(m.snippet||'')}…</span><span class="rbm-row"><button class="button outline rbm-go">前往</button>${speech?'<button class="text-button rbm-play">由此朗讀</button>':''}<button class="text-button rbm-del" aria-label="刪除書籤">刪除</button></span></li>`).join('') : '<li class="empty-state">未有書籤。讀到想停下的地方，按「加書籤」。</li>';
+  }
+  $('rbm-resume').addEventListener('click', () => bmGo(bm.last));
+  fromBm.addEventListener('click', () => bmGo(bm.last, true));
+  $('rbm-add').addEventListener('click', () => {
+    const m = bmHere(); m.id = Date.now().toString(36); m.name = `${chapter.title} · 第 ${m.card+1} 小段`;
+    bm.marks.unshift(m); bm.marks = bm.marks.slice(0, 50); bmSave(); bmRenderList();
+    $('rbm-panel').hidden = false; $('rbm-list-toggle').setAttribute('aria-expanded', 'true');
+    announce('已加書籤：' + bmWhere(m));
+  });
+  $('rbm-list-toggle').addEventListener('click', () => { const open = $('rbm-panel').hidden; $('rbm-panel').hidden = !open; $('rbm-list-toggle').setAttribute('aria-expanded', String(open)); if (open) bmRenderList(); });
+  $('rbm-list').addEventListener('click', e => {
+    const li = e.target.closest('li[data-i]'); if (!li) return; const m = bm.marks[Number(li.dataset.i)];
+    if (e.target.closest('.rbm-del')) { bm.marks.splice(Number(li.dataset.i), 1); bmSave(); bmRenderList(); announce('已刪除書籤。'); }
+    else if (e.target.closest('.rbm-go')) bmGo(m);
+    else if (e.target.closest('.rbm-play')) bmGo(m, true);
+  });
+  $('rbm-list').addEventListener('change', e => { const li = e.target.closest('li[data-i]'); if (li && e.target.classList.contains('rbm-name')) { bm.marks[Number(li.dataset.i)].name = e.target.value.trim(); bmSave(); } });
+  addEventListener('storage', e => { if (e.key === BKEY) { bm = bmLoad(); bmRenderResume(); if (!$('rbm-panel').hidden) bmRenderList(); } });
+  const resumeRequested = location.hash === '#resume' && bmValid(bm.last), resumeTarget = bm.last;
+  if (location.hash === '#resume') history.replaceState(null, '', location.pathname + location.search);
+  bmRenderResume(); bmRenderList();
   applySettings();
   const initialHash=Number(location.hash.match(/^#chapter-(\d+)$/)?.[1]);
   const initialChapter=initialHash>=1&&initialHash<=lessons.length?initialHash:Math.floor(clamp(saved.chapter??1,1,lessons.length,1));
   chapter=lessons[initialChapter-1];
   history.replaceState(null,'',`#chapter-${chapter.id}`);
-  renderChapter();
+  bmRestoring = true; renderChapter(); bmRestoring = false;
+  if (resumeRequested) bmGo(resumeTarget); else bmRenderCount();
   // 左右掃動：與「上一小段／下一小段」按鈕相同（按鈕停用時不動）
   const swipeTo = id => { const b = $(id); if (b && !b.disabled) { b.click(); const c = document.querySelector('.reading-card'); if (c) { c.classList.remove('swiped-l','swiped-r'); void c.offsetWidth; c.classList.add(id==='next'?'swiped-l':'swiped-r'); } } };
   if (window.studySwipe) window.studySwipe($('reader'), () => swipeTo('next'), () => swipeTo('prev'));

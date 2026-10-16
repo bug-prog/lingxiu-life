@@ -28,6 +28,7 @@
   .shelf-book .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:6px}
   .shelf-book .acts .button{min-height:44px}
   .shelf-last{font-size:13px;color:var(--muted);min-height:0;margin:0}
+  .shelf-resume{height:auto!important;padding-top:8px;padding-bottom:8px;display:flex;flex-direction:column;align-items:flex-start;min-height:48px;line-height:1.35}.shelf-resume[hidden]{display:none}.shelf-resume small{display:block;font-weight:400;font-size:12px;opacity:.9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
   @media(max-width:600px){.shelf{padding:14px 14px 20px}.shelf h1{font-size:23px}.shelf-grid{grid-template-columns:1fr}}
   </style>
 </head>
@@ -45,6 +46,7 @@
       <p class="d">怎樣專心靈修、禱告、讀經、明白神的旨意。按「入門 → 紮根 → 進深 → 專題」由淺入深編排。</p>
       <div class="tags"><span class="badge ok">7 章 + 4 附篇</span><span class="badge">12 課導讀</span><span class="badge">由淺入深</span></div>
       <p class="shelf-last" data-last="slow-reader:lingxiu:v1"></p>
+      <a class="button primary shelf-resume" data-resume="slow-reader:lingxiu:marks:v1" href="lingxiu.html#resume" hidden><span>↺ 繼續上次閱讀</span><small></small></a>
       <div class="acts"><a class="button primary" href="lingxiu.html">開始導讀 →</a><a class="button outline" href="lingxiu-book.html">目錄與原文</a></div>
     </article>
     <article class="shelf-book" data-book="gospel">
@@ -53,6 +55,7 @@
       <p class="d">神論、基督救贖論、人論三部共 44 章，第一部附淺白導讀，另有問題解答。</p>
       <div class="tags"><span class="badge ok">3 部 44 章</span><span class="badge">14 章導讀</span><span class="badge">原書頁碼</span></div>
       <p class="shelf-last" data-last="slow-reader:v1"></p>
+      <a class="button primary shelf-resume" data-resume="slow-reader:marks:v1" href="gospel.html#resume" hidden><span>↺ 繼續上次閱讀</span><small></small></a>
       <div class="acts"><a class="button primary" href="gospel.html">陪伴閱讀 →</a><a class="button outline" href="book.html">目錄與原文</a></div>
     </article>
   </div>
@@ -60,6 +63,9 @@
 <script>
 document.querySelectorAll('[data-last]').forEach(el => {
   try { const s = JSON.parse(localStorage.getItem(el.dataset.last) || 'null'); if (s && s.chapter) el.textContent = `上次讀到第 ${s.chapter} 課／章，已讀完 ${(s.done || []).length} 個。`; } catch {}
+});
+document.querySelectorAll('[data-resume]').forEach(a => {
+  try { const m = (JSON.parse(localStorage.getItem(a.dataset.resume) || 'null') || {}).last; if (m && m.chapter) { a.hidden = false; a.querySelector('small').textContent = `${m.mode === 'easy' ? '導讀' : '原文'}第 ${m.card + 1} 小段${m.para > 0 ? '第 ' + (m.para + 1) + ' 段' : ''}${m.sent > 0 ? '第 ' + (m.sent + 1) + ' 句' : ''}${m.snippet ? '「' + m.snippet.slice(0, 24) + '…」' : ''}`; } } catch {}
 });
 try { const t = (JSON.parse(localStorage.getItem('slow-reader:v1') || '{}').settings || {}).theme; if (t) document.body.dataset.theme = t; } catch {}
 </script>
