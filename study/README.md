@@ -93,3 +93,10 @@ node tests/smoke.cjs http://localhost:8080
 - 閱讀設定沿用陪伴閱讀（`slow-reader:v1`，只讀）；最後閱讀位置存於 `slow-reader:book:v1`。
 - 書中原文小段：`build_content.py` 會把同一頁內過短的小段（標題、句尾殘段）與相鄰小段合併，跨頁未完的短句接回上一段；只調整分段，文字覆蓋度有斷言檢查。
 - `swipe.js`：觸控左右掃動轉頁（陪伴閱讀：上／下一小段；全書原文：上／下一章），需水平為主且距離 ≥70px。
+
+## 書架與多本書（2026-10）
+
+- `index.html` 現為書架（先選書）；舊連結 `index.html#chapter-N` 會自動轉往 `gospel.html#chapter-N`。
+- 《福音神學暨福音難題解答》：`gospel.html`（陪伴閱讀）+ `book.html`（目錄與原文），資料不變。
+- 《靈修生活》（吳主光）：`lingxiu.html`（陪伴閱讀，沿用 `app.js`，以 `window.STUDY_CONF` 設定獨立儲存 `slow-reader:lingxiu:v1`、詞語表、無頁碼）+ `lingxiu-book.html` / `lingxiu-book.app.js`（導讀路徑、全書目錄、分章原文、搜尋）。
+- 資料：`assets/lingxiu-source.txt`（原始 OCR 文字）、`assets/lingxiu-lessons.json`（由淺入深四站及 12 課導讀，手寫）→ `python3 scripts/build_lingxiu.py` 產生 `assets/lingxiu-content.js`、`assets/lingxiu-book.js`。腳本只修正列明的明顯 OCR 錯字及接回斷行，並斷言原文卡覆蓋全部文字。

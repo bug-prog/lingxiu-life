@@ -143,3 +143,6 @@ footer{margin-top:20px;padding:14px 14px 18px;font-size:11px}
 .book-main:focus{outline:none}
 @media(max-width:800px){.book-page-jump{border:0!important;padding:0!important;background:none!important;box-shadow:none!important}.ch-head details{margin:6px 0}.ch-head .toc-actions{margin:6px 0}.ch-jump{margin:6px 0 4px}.search-label{padding:0 10px}}
 @media(max-width:800px){.book-page-jump input{width:92px;padding:6px 8px}}
+/* 書架連結（返回選書） */
+.book-switch a.shelf-link{flex:0 0 auto;max-width:none;border-style:dashed}
+@media(max-width:600px){.book-switch a.shelf-link{padding:8px 10px}.book-switch a.shelf-link small{display:none}}

@@ -2,7 +2,8 @@
 (() => {
   const lessons = window.BOOK_LESSONS;
   const $ = id => document.getElementById(id);
-  const STORAGE = 'slow-reader:v1';
+  const CONF = window.STUDY_CONF || {};
+  const STORAGE = CONF.storage || 'slow-reader:v1';
   const defaults = {font:22, line:2, spacing:0.02, theme:'paper', rate:0.85, voice:''};
   const glossary = {
     '神論':'討論神是否存在，以及神有甚麼性情的學問。這是本書第一部的主題。',
@@ -44,6 +45,7 @@
     '聖子':'三位一體中的一位，指耶穌基督。本章特別着重祂成就救贖。',
     '聖靈':'三位一體中的一位。本章特別着重祂與人同在、安慰和引導。'
   };
+  if (CONF.glossary) { Object.keys(glossary).forEach(k=>delete glossary[k]); Object.assign(glossary, CONF.glossary); }
   const clamp = (v,min,max,fallback) => Number.isFinite(Number(v)) ? Math.max(min,Math.min(max,Number(v))) : fallback;
   let storageAvailable = true;
   let saved = {};
@@ -105,7 +107,7 @@
     let group = '', part = 0;
     $('chapter-list').innerHTML = found.map(l => {
       let title = '';
-      if (l.part !== part) { part = l.part; group = ''; title += `<h3 class="chapter-group chapter-part">第${cnPart[part-1]}部　${escapeHTML(l.partName)}</h3>`; }
+      if (l.part !== part) { part = l.part; group = ''; title += `<h3 class="chapter-group chapter-part">${escapeHTML(l.partTitle || `第${cnPart[part-1]}部　${l.partName}`)}</h3>`; }
       if (l.group && l.group !== group) { group = l.group; title += `<h3 class="chapter-group">${escapeHTML(group)}</h3>`; }
       return title+`<a href="#chapter-${l.id}" class="chapter-link" ${l.id===chapter.id?'aria-current="true"':''}><span class="chapter-num">${String(l.idx).padStart(2,'0')}</span><span class="chapter-name">${escapeHTML(l.title)}</span>${done.has(l.id)?'<span class="chapter-check" aria-label="已讀完">✓</span>':bookmarks.has(l.id)?'<span class="chapter-check" aria-label="已收藏">★</span>':''}</a>`;
     }).join('') || `<p class="empty-state">${onlyBookmarks?'這裡還沒有符合的收藏。按章節旁的星星，就能收藏。':'找不到這個章節。試試「恩典」或「神」。'}</p>`;
@@ -139,7 +141,7 @@
     if (mode==='original') {
       const item = chapter.original[step];
       // 頁碼只作小標籤顯示，不放入朗讀內容
-      $('card-label').textContent = `原書第 ${item.page} 頁`;
+      $('card-label').textContent = item.label || `原書第 ${item.page} 頁`;
       $('card-title').textContent = `第 ${step+1} 小段`; $('card-title').classList.add('sr-only');
       $('card-body').replaceChildren(...item.text.split('\n\n').map(t => { const p = document.createElement('p'); p.textContent = t; return p; }));
       $('takeaway').innerHTML = '';
@@ -167,12 +169,13 @@
   }
   function renderChapter(focus=false) {
     quizSelection = null; hintOpen = false; syncMode();
-    $('chapter-meta').textContent = `第${cnPart[chapter.part-1]}部 ${chapter.partName} · 第 ${String(chapter.idx).padStart(2,'0')} 章 / ${lessons.filter(l=>l.part===chapter.part).length}　·　原書 ${chapter.pages[0]}–${chapter.pages[1]} 頁`;
+    if (CONF.noPages) { $('chapter-meta').textContent = `${chapter.partTitle} · 第 ${chapter.idx} 課 / ${lessons.filter(l=>l.part===chapter.part).length}　·　原書${chapter.no}`; $('original-jump').hidden = true; }
+    else $('chapter-meta').textContent = `第${cnPart[chapter.part-1]}部 ${chapter.partName} · 第 ${String(chapter.idx).padStart(2,'0')} 章 / ${lessons.filter(l=>l.part===chapter.part).length}　·　原書 ${chapter.pages[0]}–${chapter.pages[1]} 頁`;
     $('chapter-title').textContent = chapter.title;
     $('chapter-subtitle').textContent = chapter.short;
     document.title = `${chapter.title} · 慢慢讀`;
-    $('source-page').min=chapter.pages[0]; $('source-page').max=chapter.pages[1]; $('source-page').value=chapter.pages[0];
-    $('page-help').textContent = `本章原書第 ${chapter.pages[0]}–${chapter.pages[1]} 頁。`;
+    if (chapter.pages) { $('source-page').min=chapter.pages[0]; $('source-page').max=chapter.pages[1]; $('source-page').value=chapter.pages[0];
+    $('page-help').textContent = `本章原書第 ${chapter.pages[0]}–${chapter.pages[1]} 頁。`; }
     renderCatalog();if (chapter.terms.length) renderTerms('chapter-glossary',chapter.terms); else $('chapter-glossary').innerHTML='<p class="empty-state">這一章暫未整理詞語；可按「詞語小幫手」查全部詞語。</p>';updateBookmark();updateTabs();renderCard();renderProgress();
     if (focus) { $('reader').focus({preventScroll:true}); $('reader').scrollIntoView({block:'start'}); }
   }

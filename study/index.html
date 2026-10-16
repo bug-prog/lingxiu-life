@@ -4,53 +4,64 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#92400e">
-  <meta name="description" content="把《福音神學暨福音難題解答》全書三部拆成小段，配合原文卡、第一部淺白導讀、聆聽、詞語解釋和原文對照。按自己的步伐閱讀。">
-  <title>慢慢讀 · 福音神學陪伴閱讀</title>
+  <meta name="description" content="屬靈學習書架：選擇一本書，再用淺白導讀、原文卡和聆聽慢慢讀。">
+  <title>書架 · 慢慢讀</title>
+  <script>
+  // 舊連結相容：index.html#chapter-N（福音神學陪伴閱讀）轉往 gospel.html
+  const legacy = () => { if (/^#chapter-\d+$/.test(location.hash)) location.replace('gospel.html' + location.hash); };
+  legacy(); addEventListener('hashchange', legacy);
+  </script>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="site-theme.css">
   <link rel="stylesheet" href="book.css">
-  <script src="swipe.js"></script>
-<script src="embed.js"></script>
-  <script src="assets/content.js" defer></script>
-  <script src="app.js" defer></script>
+  <script src="embed.js"></script>
+  <style>
+  .shelf{max-width:1100px;margin:0 auto;padding:22px 32px 30px}
+  .shelf h1{font-size:28px;margin:0 0 4px}.shelf>p{color:var(--muted);margin:0 0 18px}
+  .shelf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+  .shelf-book{display:flex;flex-direction:column;gap:10px;border:1px solid var(--border);background:var(--card);border-radius:16px;padding:20px 22px;box-shadow:var(--shadow)}
+  .shelf-book .cat{font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.06em}
+  .shelf-book h2{margin:0;font-size:22px;line-height:1.35}.shelf-book .by{margin:0;color:var(--muted);font-size:14px}
+  .shelf-book p.d{margin:0;font-size:15px;line-height:1.7}
+  .shelf-book .tags{display:flex;flex-wrap:wrap;gap:6px}
+  .shelf-book .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:6px}
+  .shelf-book .acts .button{min-height:44px}
+  .shelf-last{font-size:13px;color:var(--muted);min-height:0;margin:0}
+  @media(max-width:600px){.shelf{padding:14px 14px 20px}.shelf h1{font-size:23px}.shelf-grid{grid-template-columns:1fr}}
+  </style>
 </head>
 <body>
-<a class="skip" href="#reader">跳到閱讀內容</a>
-<p class="study-note">原文經掃描辨識，或有少量錯字</p>
 <header class="site-header">
-  <a class="brand" href="#chapter-1" aria-label="慢慢讀，第一章"><span class="brand-icon" aria-hidden="true">慢</span><span><strong>慢慢讀<span class="brand-dot">.</span></strong><small>一本書，一小步</small></span></a>
-  <nav aria-label="主要功能"><button id="glossary-open" class="text-button">詞語小幫手</button><button id="about-open" class="text-button desktop-only">關於這本書</button><button id="settings-open" class="button outline"><span aria-hidden="true">Aa</span> 閱讀設定</button></nav>
+  <a class="brand" href="index.html" aria-label="慢慢讀書架"><span class="brand-icon" aria-hidden="true">慢</span><span><strong>慢慢讀<span class="brand-dot">.</span></strong><small>一本書，一小步</small></span></a>
 </header>
-<nav class="book-switch" aria-label="閱讀方式"><a href="index.html" aria-current="page">陪伴閱讀<small>淺白導讀 · 聆聽</small></a><a href="book.html">全書目錄與原文<small>書本資料 · 序言 · 分章原文</small></a></nav>
-<main id="main">
-  <section class="hero" aria-labelledby="welcome-title">
-    <div class="hero-copy"><p class="eyebrow"><span class="live-dot" aria-hidden="true"></span> 福音神學暨福音難題解答 · 全書三部</p><h1 id="welcome-title">慢一點讀，<br>讓意思清楚一點。</h1><p class="hero-description">不用一次讀懂整本書。<br>一小段、一個重點，按你的步伐來。</p><div class="hero-tags"><span>44 章原文 · 14 章陪伴導讀</span><span>可以聽，也可以讀</span><span>隨時停下來</span></div></div>
-    <div class="hero-art" aria-hidden="true"><svg viewBox="0 0 360 260" fill="none"><circle cx="195" cy="131" r="110" fill="#e2e8da"/><circle cx="298" cy="58" r="14" fill="#eac6a8"/><path d="M45 196c43-7 58-16 84-6" stroke="#bfd0c1" stroke-width="2" stroke-linecap="round"/><g transform="rotate(-8 190 140)"><path d="M77 73c43-12 77-9 113 12v145c-39-22-74-24-113-12V73Z" fill="#fffdf5" stroke="#315e50" stroke-width="2"/><path d="M190 85c36-21 70-24 113-12v145c-39-12-74-10-113 12V85Z" fill="#f8f7ed" stroke="#315e50" stroke-width="2"/><path d="M86 67c38-9 69-6 104 15 35-21 67-24 105-15v139c-38-10-69-7-105 15-36-22-67-25-104-15V67Z" fill="#fffdf6" stroke="#315e50" stroke-width="2"/><path d="M190 82v139" stroke="#315e50" stroke-width="2"/><path d="M212 100c19-7 36-9 59-5M212 120c19-7 36-9 59-5M212 140c19-7 36-9 59-5M212 160c19-7 36-9 59-5M108 100c22-3 39 0 60 8M108 120c22-3 39 0 60 8M108 140c22-3 39 0 60 8" stroke="#bfcbbd" stroke-width="4" stroke-linecap="round"/><path d="M139 66v74l12-8 12 15V71" fill="#c67c50"/></g><path d="M53 88c19 3 29 16 31 36-19-3-29-16-31-36ZM51 125c14 2 23 11 26 26-16-2-24-11-26-26Z" fill="#78947a"/><path d="M80 166c-2-34-12-57-28-77" stroke="#78947a" stroke-width="2"/><path d="m285 33 3-12 3 12 12 3-12 3-3 12-3-12-12-3 12-3Z" fill="#bd784e"/></svg><span class="art-note">理解，比速度更重要。</span></div>
-  </section>
-  <section class="overall-progress" aria-label="整本書閱讀進度"><div><span class="progress-icon" aria-hidden="true">↗</span><span><strong id="progress-label">你的閱讀旅程</strong><small id="progress-sub">從任何一章開始都可以</small></span></div><div class="overall-meter"><progress id="overall-meter" value="0" max="44" aria-label="已完成章節"></progress><span id="progress-number">0 / 44 章</span></div></section>
-  <div class="workspace">
-    <aside class="chapter-sidebar" aria-label="章節目錄"><div class="sidebar-heading"><h2>這次想讀甚麼？</h2><button id="catalog-toggle" class="text-button mobile-only" aria-expanded="false" aria-controls="catalog-body">展開目錄</button></div><div id="catalog-body"><label class="search-label" for="chapter-search"><span aria-hidden="true">⌕</span><input type="search" id="chapter-search" placeholder="找章節或關鍵字" autocomplete="off"></label><div class="filter-row"><button id="bookmark-filter" class="filter" aria-pressed="false">☆ 只看收藏</button><span id="chapter-count">44 章</span></div><div id="chapter-list"></div><p class="sidebar-note">進度會自動記住。<br>休息後，再回來就好。</p></div></aside>
-    <section class="reading-area" id="reader" aria-labelledby="chapter-title" tabindex="-1">
-      <div class="chapter-heading"><div><p class="eyebrow" id="chapter-meta"></p><h2 id="chapter-title"></h2><p id="chapter-subtitle"></p></div><button id="bookmark" class="icon-button" aria-label="收藏這一章" aria-pressed="false">☆</button></div>
-      <div class="reader-tabs" role="tablist" aria-label="閱讀模式"><button id="easy-tab" role="tab" aria-selected="true" aria-controls="reading-panel" tabindex="0">淺白導讀<span>先讀懂重點</span></button><button id="original-tab" role="tab" aria-selected="false" aria-controls="reading-panel" tabindex="-1">書中原文<span>逐段慢慢看</span></button></div>
-      <div class="reading-tools"><span id="mode-note">依作者觀點整理 · 導讀非原文</span><button id="focus-toggle" class="text-button" aria-pressed="false"><span aria-hidden="true">⊙</span> 專心閱讀</button></div>
-      <div class="reader-columns"><div class="reader-main"><div id="reading-panel" role="tabpanel" aria-labelledby="easy-tab"><article class="reading-card"><div class="card-top"><span id="card-label"></span><span id="card-count"></span></div><div class="step-dots" id="step-dots" aria-label="這章的小段落"></div><h3 id="card-title" tabindex="-1"></h3><div id="card-body" class="reading-text"></div><div id="takeaway" class="takeaway"></div><div id="quiz-feedback" class="feedback" role="status"></div></article></div>
-        <div class="audio-bar"><button id="speak" class="button audio-button"><span aria-hidden="true">▷</span> 聽這一段</button><button id="speech-stop" class="text-button" disabled>停止</button><span id="audio-status">可以跟着文字慢慢聽</span></div>
-        <div class="step-navigation"><button id="prev" class="button outline">← 上一小段</button><span id="navigation-label"></span><button id="next" class="button primary">下一小段 →</button></div><p class="swipe-hint" aria-hidden="true">左右掃動可轉頁</p>
-        <p id="completion" class="completion" role="status"></p>
-        <details class="original-jump" id="original-jump"><summary>想找書中某一頁？</summary><label for="source-page">跳到原書頁碼</label><div><input id="source-page" type="number" inputmode="numeric"><button id="page-go" class="button outline">前往原文</button></div><p id="page-help"></p></details>
-      </div>
-      <aside class="helper-panel" aria-label="這章的閱讀小幫手"><div class="helper-heading"><span aria-hidden="true">✦</span><h3>詞語小幫手</h3></div><p class="helper-intro">不熟悉的詞，點開看看。</p><div id="chapter-glossary"></div><div class="gentle-note"><span aria-hidden="true">☕</span><strong>不用趕進度</strong><p>讀完這一小段，<br>已經是向前一步。</p></div><button id="help-open" class="text-button">第一次使用？看看怎樣讀 ↗</button></aside></div>
-    </section>
+<main class="shelf" id="main">
+  <h1>先選一本書</h1>
+  <p>每本書都有淺白導讀、原文卡、聆聽和全書目錄。</p>
+  <div class="shelf-grid">
+    <article class="shelf-book" data-book="lingxiu">
+      <span class="cat">靈修操練 · 入門推薦</span>
+      <h2>靈修生活</h2><p class="by">吳主光 著</p>
+      <p class="d">怎樣專心靈修、禱告、讀經、明白神的旨意。按「入門 → 紮根 → 進深 → 專題」由淺入深編排。</p>
+      <div class="tags"><span class="badge ok">7 章 + 4 附篇</span><span class="badge">12 課導讀</span><span class="badge">由淺入深</span></div>
+      <p class="shelf-last" data-last="slow-reader:lingxiu:v1"></p>
+      <div class="acts"><a class="button primary" href="lingxiu.html">開始導讀 →</a><a class="button outline" href="lingxiu-book.html">目錄與原文</a></div>
+    </article>
+    <article class="shelf-book" data-book="gospel">
+      <span class="cat">神學 · 進深</span>
+      <h2>福音神學暨福音難題解答</h2><p class="by">吳主光 著 · 種籽出版社</p>
+      <p class="d">神論、基督救贖論、人論三部共 44 章，第一部附淺白導讀，另有問題解答。</p>
+      <div class="tags"><span class="badge ok">3 部 44 章</span><span class="badge">14 章導讀</span><span class="badge">原書頁碼</span></div>
+      <p class="shelf-last" data-last="slow-reader:v1"></p>
+      <div class="acts"><a class="button primary" href="gospel.html">陪伴閱讀 →</a><a class="button outline" href="book.html">目錄與原文</a></div>
+    </article>
   </div>
 </main>
-<footer><a class="footer-brand" href="#chapter-1">慢慢讀.</a><p>理解內容，保留思考的空間。</p><button id="footer-about" class="text-button">書籍與內容說明</button></footer>
-<div id="announcement" class="sr-only" role="status" aria-live="polite"></div>
-<dialog id="settings-dialog" aria-labelledby="settings-title"><div class="dialog-heading"><div><p class="eyebrow">找到舒服的閱讀方式</p><h2 id="settings-title">閱讀設定</h2></div><button class="dialog-close icon-button" aria-label="關閉閱讀設定">×</button></div><p>沒有標準答案，舒服就好。</p><label class="setting-label" for="font-size">字體大小 <output id="font-output">22 px</output></label><input id="font-size" type="range" min="18" max="32" step="2" value="22"><label class="setting-label" for="line-height">行距 <output id="line-output">寬鬆</output></label><input id="line-height" type="range" min="1.6" max="2.6" step="0.2" value="2"><label class="setting-label" for="letter-spacing">字距</label><select id="letter-spacing"><option value="0.02">一般</option><option value="0.08">寬一點</option><option value="0.14">更寬</option></select><label class="setting-label" for="theme">頁面顏色</label><select id="theme"><option value="paper">暖紙色</option><option value="white">白色</option><option value="dark">深色</option></select><label class="setting-label" for="voice">聆聽語音</label><select id="voice"><option value="">裝置的預設中文語音</option></select><p class="field-note">粵語或國語是否可用，視乎裝置安裝的語音。部分語音需要網絡。</p><label class="setting-label" for="speech-rate">朗讀速度 <output id="rate-output">0.85 倍</output></label><input id="speech-rate" type="range" min="0.5" max="1.2" step="0.05" value="0.85"><button id="settings-reset" class="button outline">還原閱讀設定</button><p class="field-note">只還原版面和語音設定，保留你的閱讀進度。</p></dialog>
-<dialog id="glossary-dialog" aria-labelledby="glossary-title"><div class="dialog-heading"><div><p class="eyebrow">不明白，可以慢慢查</p><h2 id="glossary-title">詞語小幫手</h2></div><button class="dialog-close icon-button" aria-label="關閉詞語小幫手">×</button></div><label class="search-label" for="glossary-search"><span aria-hidden="true">⌕</span><input type="search" id="glossary-search" placeholder="輸入一個詞語"></label><div id="all-glossary"></div></dialog>
-<dialog id="about-dialog" aria-labelledby="about-title"><div class="dialog-heading"><h2 id="about-title">關於這本書與導讀</h2><button class="dialog-close icon-button" aria-label="關閉書籍說明">×</button></div><p>原書：《福音神學暨福音難題解答（修訂版）》</p><p>著者：吳主光<br>出版社：種籽出版社<br>修訂版：2016 年 4 月</p><p>這裡收錄全書三部共 44 章原文（原書第 44–510 頁）：第一部「神論」14 章另有淺白導讀；第二部「基督救贖論」16 章及第三部「人論」14 章暫只有原文卡。序言及全書目錄見「全書目錄與原文」頁。</p><p>「淺白導讀」是輔助理解的編寫內容，不是作者原句，也不是完整逐句譯寫。生活例子及閱讀提醒是導讀補充。每章練習只檢查是否理解作者的意思，不評斷讀者的信仰。</p><p>原書的宗教比較、歷史及科學主張保留在原文中，代表作者的論述；本站沒有逐項查證。</p><a class="button outline" href="assets/book-full.txt" download>下載整理文字檔 ↓</a><hr><p class="field-note">進度和偏好只儲存在目前瀏覽器，沒有帳戶或追蹤分析。瀏覽器朗讀使用裝置提供的語音；個別語音服務可能透過網絡運作。</p><p class="field-note">閱讀設計參考 <a href="https://www.w3.org/WAI/WCAG2/supplemental/objectives/o3-clear-content/" target="_blank" rel="noreferrer">W3C 清晰內容指引</a>。這是一個可調整的閱讀工具，並非經臨床驗證的讀寫障礙介入。</p></dialog>
-<dialog id="help-dialog" aria-labelledby="help-title"><div class="dialog-heading"><h2 id="help-title">三步開始，慢慢來</h2><button class="dialog-close icon-button" aria-label="關閉使用說明">×</button></div><ol class="help-steps"><li><strong>選一章</strong><p>從左邊的目錄選題目，不用順序讀。</p></li><li><strong>讀一小段，或按「聽這一段」</strong><p>看不清，可以在閱讀設定調大文字。</p></li><li><strong>按「下一小段」</strong><p>不明白可重讀、查詞語或看提示。最後可記下這章已讀完。</p></li></ol><p>想看作者原句，就選「書中原文」。有疑問，也可以找信任的人一起讀。</p></dialog>
-<noscript><p class="noscript">這個閱讀工具需要啟用 JavaScript。你也可以直接<a href="assets/book-full.txt">開啟文字檔</a>。</p></noscript>
+<script>
+document.querySelectorAll('[data-last]').forEach(el => {
+  try { const s = JSON.parse(localStorage.getItem(el.dataset.last) || 'null'); if (s && s.chapter) el.textContent = `上次讀到第 ${s.chapter} 課／章，已讀完 ${(s.done || []).length} 個。`; } catch {}
+});
+try { const t = (JSON.parse(localStorage.getItem('slow-reader:v1') || '{}').settings || {}).theme; if (t) document.body.dataset.theme = t; } catch {}
+</script>
 </body>
 </html>
